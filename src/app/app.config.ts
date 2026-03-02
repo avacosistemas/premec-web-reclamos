@@ -43,8 +43,8 @@ export const appConfig: ApplicationConfig = {
             appName: 'PREMEC',
             appLogo: 'assets/images/logo/logo_premec.png',
             appLogoSmall: 'assets/images/logo/logo_premec.png',
-            welcomeTitleLine1: 'Administrador de',
-            welcomeTitleLine2: 'Contenidos PREMEC'
+            welcomeTitleLine1: 'Gestor de',
+            welcomeTitleLine2: 'Reclamos PREMEC'
         }),
 
         provideFwkCore(),
