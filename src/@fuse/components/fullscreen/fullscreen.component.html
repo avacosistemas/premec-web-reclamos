@@ -1,0 +1,9 @@
+<div class="flex items-center" [matTooltip]="tooltip || 'Pantalla completa'" (click)="toggleFullscreen()">
+    <ng-container [ngTemplateOutlet]="iconTpl || defaultIconTpl"></ng-container>
+    Pantalla completa
+</div>
+
+<!-- Default icon -->
+<ng-template #defaultIconTpl>
+    <mat-icon [svgIcon]="'heroicons_outline:arrows-pointing-out'"></mat-icon>
+</ng-template>

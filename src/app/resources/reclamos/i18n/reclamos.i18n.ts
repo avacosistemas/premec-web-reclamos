@@ -1,0 +1,41 @@
+import { I18n } from "@fwk/model/i18n";
+
+export const RECLAMOS_I18N_DEF: I18n = {
+    name: 'RECLAMOS',
+    lang: 'es',
+    words: {
+        'page_title': 'Gestión de Reclamos',
+        'cl_id': 'ID',
+        'cl_numero': 'Número',
+        'cl_asunto': 'Asunto',
+        'cl_maquina': 'Máquina',
+        'cl_fecha_creacion': 'Fecha Creación',
+        'cl_fecha_asignacion': 'Fecha Asignación',
+        'cl_fecha_inicio': 'Fecha Inicio',
+        'cl_fecha_fin': 'Fecha Fin',
+        'cl_estado': 'Estado',
+        'cl_detalle': 'Detalle',
+        'cl_tipo': 'Tipo',
+        'cl_subtipo': 'Subtipo',
+        'fl_numero': 'Nro. de Reclamo',
+        'fl_maquina': 'Máquina',
+        'fl_desde': 'Desde',
+        'fl_hasta': 'Hasta',
+        'fl_tipo_fecha': 'Tipo de Fecha',
+        'action_ver': 'Ver',
+        'action_editar': 'Editar',
+        'action_detalle': 'Ver Detalle',
+        'add_button': 'Nuevo Reclamo',
+        'create_reclamo_title': 'Cargar Reclamo',
+        'edit_reclamo_title': 'Actualizar Reclamo',
+        'view_reclamo_title': 'Detalle de Reclamo',
+        'f_maquina': 'Seleccionar Máquina',
+        'f_asunto': 'Asunto',
+        'f_detalle': 'Descripción del problema',
+        'f_fotos': 'Imágenes (Máx 3)',
+        'f_tipo': 'Tipo de Problema',
+        'f_subtipo': 'Subtipo de Problema',
+        'f_comentario': 'Agregar Comentario',
+        'create_access_denied_message': 'Para poder cargar un nuevo reclamo deberá comunicarse con administración.'
+    }
+};

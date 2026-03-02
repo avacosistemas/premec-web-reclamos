@@ -1,0 +1,33 @@
+﻿<div class="flex flex-col max-h-screen" [ngClass]="[data.modalKey + '-modal', currentUrl + '-modal']">
+
+    <mat-progress-bar *ngIf="_submitting" mode="indeterminate"></mat-progress-bar>
+
+    <div class="flex flex-0 items-center justify-between pl-6 pr-4 h-16">
+        <h2 class="text-2xl font-semibold">{{ titleLabel }}</h2>
+        <button mat-icon-button (click)="onNoClick()" [disabled]="_submitting"
+            [matTooltip]="'modal_button_close' | translate">
+            <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </button>
+    </div>
+
+    <div mat-dialog-content class="flex-auto overflow-y-auto p-6 pb-6 border-t border-gray-200 dark:border-gray-600">
+        <fwk-dynamic-form-component #dynamicForm [entity]="entity" [isEdit]="isEdit()" [fields]="fields"
+            [subFormName]="formKey" [parentForm]="form" (onChangeEntity)="onChangeEntity($event)">
+        </fwk-dynamic-form-component>
+    </div>
+
+    <div *ngIf="!notShowButton" mat-dialog-actions
+        class="flex items-center justify-end p-6 pt-4 !border-t !border-gray-200 !dark:border-gray-600">
+
+
+        <button *ngIf="formDef?.showSubmitContinue" class="ml-2" mat-flat-button color="accent"
+            (click)="onSubmitNoClose()" [disabled]="form.pristine || form.invalid || _submitting">
+            {{ 'modal_button_save_and_continue' | translate }}
+        </button>
+
+        <button class="ml-2" mat-flat-button color="accent" (click)="onSubmit()"
+            [disabled]="form.pristine || form.invalid || _submitting">
+            {{ submitLabel }}
+        </button>
+    </div>
+</div>

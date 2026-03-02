@@ -1,0 +1,49 @@
+<fuse-loading-bar></fuse-loading-bar>
+
+<fuse-vertical-navigation class="dark bg-gray-900 print:hidden" [appearance]="navigationAppearance"
+    [mode]="isScreenSmall ? 'over' : 'side'" [name]="'mainNavigation'" [navigation]="navigation.default"
+    [opened]="!isScreenSmall">
+
+    <ng-container fuseVerticalNavigationContentHeader>
+        <div [routerLink]="'/'" class="flex items-center cursor-pointer justify-center h-20">
+            <fwk-logo size="small" imgClass="w-12"></fwk-logo>
+        </div>
+    </ng-container>
+
+    <ng-container fuseVerticalNavigationContentFooter>
+        <div class="flex flex-col items-center justify-center w-full p-4 space-y-2">
+            <button *ngIf="isDevMode" mat-icon-button [routerLink]="'/dev-tools'" color="accent"
+                matTooltip="Herramientas de Desarrollo">
+                <mat-icon [svgIcon]="'heroicons_outline:wrench-screwdriver'"></mat-icon>
+            </button>
+
+            <button class="hidden md:inline-flex" mat-icon-button (click)="toggleNavigationAppearance()">
+                <mat-icon [svgIcon]="'heroicons_outline:arrows-right-left'"></mat-icon>
+            </button>
+        </div>
+    </ng-container>
+</fuse-vertical-navigation>
+
+<div class="flex flex-col flex-auto w-full min-w-0 h-screen overflow-auto">
+    <div
+        class="bg-card dark:bg-transparent dark:shadow-none flex flex-0 items-center p-2 sm:px-4 print:hidden relative w-full z-49">
+        <div class="flex items-center space-x-2">
+            <button mat-icon-button (click)="toggleNavigation('mainNavigation')">
+                <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
+            </button>
+        </div>
+
+        <span class="w-1 h-6 mx-1 border-r border-gray-300 dark:border-gray-700"></span>
+
+        <fwk-search-button></fwk-search-button>
+
+        <div class="flex items-center pl-2 mr-2 ml-auto space-x-0.5 sm:space-x-2">
+            <user></user>
+        </div>
+    </div>
+
+    <div class="flex flex-col flex-auto">
+        <router-outlet *ngIf="true"></router-outlet>
+    </div>
+
+</div>

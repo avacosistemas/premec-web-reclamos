@@ -1,0 +1,42 @@
+﻿<mat-form-field class="w-full" appearance="outline">
+    <mat-label>{{ config?.label }}</mat-label>
+
+    <input
+        #autoCompleteInput
+        type="text"
+        matInput
+        [formControl]="autocompleteControl"
+        [matAutocomplete]="auto"
+        [required]="config?.required"
+        [errorStateMatcher]="matcher"
+        (blur)="onTouched()"
+        (focus)="onInputFocus()"
+        (click)="triggerSearch()">
+
+    <button
+        mat-icon-button
+        matSuffix
+        type="button"
+        (click)="openDropdown()"
+        [disabled]="autocompleteControl.disabled"
+        [matTooltip]="'autocomplete_show_options_tooltip' | translate">
+        <mat-icon [svgIcon]="'heroicons_outline:chevron-down'"></mat-icon>
+    </button>
+
+    <mat-error *ngIf="autocompleteControl.hasError('required') && !errorMessage">
+        {{ config?.options?.requiredMessage || ('autocomplete_required_error' | translate) }}
+    </mat-error>
+    <mat-error *ngIf="autocompleteControl.hasError('selectOrCleanField') && !errorMessage">
+        {{ config?.options?.selectElementOrCleanField || ('autocomplete_select_or_clean_error' | translate) }}
+    </mat-error>
+
+    <mat-error *ngIf="errorMessage">{{ errorMessage }}</mat-error>
+</mat-form-field>
+
+<mat-autocomplete #auto="matAutocomplete"
+                [displayWith]="displayWith"
+                (optionSelected)="onOptionSelected()">
+    <mat-option *ngFor="let option of filteredOptions$ | async" [value]="option">
+        <span>{{ config?.options?.elementLabel ? option[config.options.elementLabel] : option }}</span>
+    </mat-option>
+</mat-autocomplete>

@@ -1,0 +1,13 @@
+export interface WelcomeCard {
+    title: string;
+    description: string;
+    icon: string;
+    route: string;
+    color: 'red' | 'pink' | 'gray' | 'primary' | 'teal' | 'purple' | 'orange' | 'sky' | 'rose' | 'indigo' | 'blue' | 'amber' | 'green' | 'cyan' | 'emerald' | 'slate'; 
+    permission?: string;
+}
+
+export interface WelcomeSection {
+    title: string;
+    items: WelcomeCard[];
+}

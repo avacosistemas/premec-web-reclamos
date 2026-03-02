@@ -1,0 +1,41 @@
+:host {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+}
+
+mat-dialog-container .mat-mdc-dialog-container,
+mat-dialog-container .mdc-dialog__surface {
+    padding: 0px !important;
+}
+
+fwk-question-modal-component .mdc-dialog__title,
+fwk-question-modal-component .mdc-dialog__actions {
+    padding: 14px 22px !important;
+}
+
+fwk-question-modal-component .mdc-dialog__content {
+    padding: 0px 25px !important;
+}
+
+apx-chart.absolute {
+    position: relative !important;
+}
+
+.mat-mdc-select-panel {
+    padding-top: 0px !important;
+    border-radius: 15px !important;
+}
+
+.mat-mdc-select-panel input {
+    border: 1px solid rgb(171, 171, 171) !important;
+    padding: 5px !important;
+    border-radius: 6px !important;
+    height: 44px !important;
+    margin-bottom: 10px !important;
+}
+
+fwk-icon-picker .mat-mdc-text-field-wrapper.mdc-text-field--outlined .mat-mdc-form-field-infix {
+    padding-bottom: 0px !important;
+}

@@ -1,0 +1,1 @@
+export const __constName___CREATE_FORM_BEHAVIOR_DEF = [];

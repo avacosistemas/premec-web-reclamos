@@ -1,0 +1,35 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": "./src",
+        "outDir": "./dist/out-tsc",
+        "paths": {
+            "@fwk/*": [
+                "@fwk/*"
+            ]
+        },
+        "sourceMap": true,
+        "declaration": false,
+        "downlevelIteration": true,
+        "experimentalDecorators": true,
+        "moduleResolution": "node",
+        "importHelpers": true,
+        "target": "ES2022",
+        "module": "ES2022",
+        "types": [
+            "vite/client"
+        ],
+        "useDefineForClassFields": false,
+        "lib": [
+            "ES2022",
+            "dom"
+        ]
+    },
+    "angularCompilerOptions": {
+        "enableI18nLegacyMessageIdFormat": false
+    },
+    "exclude": [
+        "src/@fwk/_templates/**/*"
+    ]
+}
