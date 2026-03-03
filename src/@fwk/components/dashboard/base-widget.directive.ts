@@ -1,4 +1,4 @@
-import { Directive, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Directive, Input, Output, EventEmitter, inject, OnChanges } from '@angular/core';
 import { of } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
 import { DashboardWidgetDef, StatData } from '@fwk/model/component-def/dashboard-def';
@@ -12,14 +12,24 @@ import { I18nService } from '@fwk/services/i18n-service/i18n.service';
 export class BaseWidgetDirective {
     @Input() widgetDef: DashboardWidgetDef;
     @Input() i18nName: string;
+    @Input() globalFilters: any;
     @Output() dataLoaded = new EventEmitter<void>();
 
     protected genericHttpService = inject(GenericHttpService);
     private i18nService = inject(I18nService);
 
+    protected currentLocalFilter: any = 'all';
+
     public initialize(): void {
         this.resolveWidgetTitle();
-        this.loadData(this.widgetDef.filterConfig?.defaultOption || 'all');
+        this.currentLocalFilter = this.widgetDef.filterConfig?.defaultOption || 'all';
+        this.loadData();
+    }
+
+    ngOnChanges(changes: any): void {
+        if (changes.globalFilters && !changes.globalFilters.firstChange) {
+            this.loadData();
+        }
     }
 
     private resolveWidgetTitle(): void {
@@ -29,7 +39,7 @@ export class BaseWidgetDirective {
         }
     }
 
-    public loadData(filterValue: string): void {
+    public loadData(): void {
         if (!this.widgetDef || this.widgetDef.type === 'widget-group' || !this.widgetDef.ws) {
             this.dataLoaded.emit();
             return;
@@ -38,19 +48,25 @@ export class BaseWidgetDirective {
         this.widgetDef.isLoading = true;
         this.widgetDef.hasError = false;
 
-        const params = this.getFilterParamsForApi(filterValue);
+        const params = this.getFilterParamsForApi();
 
         this.genericHttpService.httpGet(this.widgetDef.ws.url, params)
             .pipe(
                 map(data => {
+                    let actualData = data;
+                    if (data && data.hasOwnProperty('data')) {
+                        actualData = data.data;
+                    }
+
                     if (this.widgetDef.type === 'stat') {
-                        if (Array.isArray(data) && data[0]) {
-                            this.widgetDef.dataSource = [this._mapDataToStatFormat(data[0])];
-                        } else if (data) {
-                            this.widgetDef.dataSource = [this._mapDataToStatFormat(data)];
+                        if (Array.isArray(actualData)) {
+                            this.widgetDef.dataSource = actualData.map(item => this._mapDataToStatFormat(item));
+                        } else if (actualData) {
+                            this.widgetDef.dataSource = [this._mapDataToStatFormat(actualData)];
                         }
                     } else {
-                        this.widgetDef.apexChartData = this._mapDataToApexChartsFormat(data as any[]);
+                        const chartArray = Array.isArray(actualData) ? actualData : [];
+                        this.widgetDef.apexChartData = this._mapDataToApexChartsFormat(chartArray);
                     }
                 }),
                 catchError(error => {
@@ -69,10 +85,10 @@ export class BaseWidgetDirective {
 
     private _mapDataToStatFormat(apiData: any): StatData {
         return {
-            mainStat: Number(apiData.value) || 0,
+            mainStat: (apiData.value !== undefined && apiData.value !== null) ? Number(apiData.value) : 0,
             mainStatLabel: apiData.name || '',
             title: apiData.title || '',
-            secondaryStat: Number(apiData.secondaryValue) || undefined,
+            secondaryStat: (apiData.secondaryValue !== undefined && apiData.secondaryValue !== null) ? Number(apiData.secondaryValue) : undefined,
             secondaryStatLabel: apiData.secondaryLabel || undefined,
             color: apiData.color || 'blue'
         };
@@ -106,15 +122,48 @@ export class BaseWidgetDirective {
         };
     }
 
-    protected getFilterParamsForApi(filterValue: string): any {
-        const params: { [key: string]: string } = {};
-        if (filterValue && filterValue.toLowerCase() !== 'all') {
-            params['filter'] = filterValue;
+    protected getFilterParamsForApi(): any {
+        let params: { [key: string]: any } = {};
+
+        // Local widget filter
+        const localFilter = this.currentLocalFilter;
+        if (localFilter) {
+            if (typeof localFilter === 'object' && localFilter.type === 'date-range') {
+                if (localFilter.value.start) params['fechaDesde'] = this.formatDate(localFilter.value.start);
+                if (localFilter.value.end) params['fechaHasta'] = this.formatDate(localFilter.value.end);
+            } else if (typeof localFilter === 'string' && localFilter.toLowerCase() !== 'all') {
+                params['filter'] = localFilter;
+            }
+        }
+
+        // Global filters (only if not overridden by local range)
+        if (this.globalFilters) {
+            Object.keys(this.globalFilters).forEach(key => {
+                const val = this.globalFilters[key];
+                if (val && typeof val === 'object' && (val.start || val.end)) {
+                    // Only apply global date range if local isn't set to range
+                    if (!params['fechaDesde'] && !params['fechaHasta']) {
+                        if (val.start) params['fechaDesde'] = this.formatDate(val.start);
+                        if (val.end) params['fechaHasta'] = this.formatDate(val.end);
+                    }
+                } else if (val && val !== 'all' && !params[key]) {
+                    params[key] = val;
+                }
+            });
         }
         return params;
     }
 
-    onFilterChanged(filterValue: string): void {
-        this.loadData(filterValue);
+    private formatDate(date: Date): string {
+        if (!date) return '';
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    onFilterChanged(filterValue: any): void {
+        this.currentLocalFilter = filterValue;
+        this.loadData();
     }
 }

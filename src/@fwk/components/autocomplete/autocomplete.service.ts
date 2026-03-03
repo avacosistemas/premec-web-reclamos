@@ -46,9 +46,12 @@ export class AutocompleteService {
         const controlName = queryString[key];
         const control = formGroup.get(controlName);
 
-        if (control && control.value !== null && control.value !== undefined) {
-          params = params.set(key, control.value);
+        if (!control || control.value === null || control.value === undefined || control.value === '') {
+          console.log(`[Autocomplete] Abortando búsqueda para ${configuration.key}: falta dependencia ${controlName}`);
+          return of([]);
         }
+
+        params = params.set(key, control.value);
       }
     }
 

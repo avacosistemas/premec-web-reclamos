@@ -6,9 +6,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { SearchModalComponent } from '../search-modal/search-modal.component';
 import { AbstractAuthService } from '@fwk/auth/abstract-auth.service';
 import { TranslatePipe } from '@fwk/pipe/translate.pipe';
+import { FWK_CONFIG } from '@fwk/model/fwk-config';
 
 @Component({
-     selector: 'fwk-search-button',
+    selector: 'fwk-search-button',
     standalone: true,
     imports: [CommonModule, MatButtonModule, MatIconModule, TranslatePipe],
     templateUrl: './search-button.component.html',
@@ -17,12 +18,13 @@ import { TranslatePipe } from '@fwk/pipe/translate.pipe';
 export class SearchButtonComponent implements OnInit {
     private dialog = inject(MatDialog);
     private authService = inject(AbstractAuthService);
+    private fwkConfig = inject(FWK_CONFIG);
 
     searchEnabled = false;
 
     ngOnInit(): void {
         this.authService.authenticated$.subscribe(isAuthenticated => {
-            this.searchEnabled = isAuthenticated;
+            this.searchEnabled = isAuthenticated && (this.fwkConfig.showSearchButton !== false);
         });
     }
 

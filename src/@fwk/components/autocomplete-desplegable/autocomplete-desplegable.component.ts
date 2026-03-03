@@ -140,6 +140,7 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
 
         this.filteredOptions$ = merge(inputChanges$, this.searchTrigger$).pipe(
             takeUntil(this.destroy$),
+            filter(() => !this.autocompleteControl.disabled),
             debounceTime(environment.AUTOCOMPLETE_WAITING_TIME ?? 300),
             switchMap(value => {
                 if (typeof value === 'object' && value !== null) {

@@ -101,7 +101,11 @@ export class BasicModalComponent extends AbstractFormComponent implements OnInit
         this.getUrl();
     }
 
-    override ngOnInit(): void { }
+    override ngOnInit(): void {
+        super.ngOnInit();
+        this.currentUrl = this.activatedRoute.snapshot.url[0]?.path || '';
+        this.i18nComponent = this.data.i18n;
+    }
 
     private getUrl(): void {
         const firstChild = this.activatedRoute.snapshot.firstChild;
@@ -127,12 +131,21 @@ export class BasicModalComponent extends AbstractFormComponent implements OnInit
     }
 
     isEdit(): boolean {
-        return true;
+        return this.entity && (this.entity.id !== undefined && this.entity.id !== null);
     }
 
     onSubmitNoClose(): void {
-        this.callSubmit(() => {
+        this.callSubmit((result: any) => {
             if (this.dynamicForm) {
+                if (result && typeof result === 'object' && (result.id || result.Guid)) {
+                    this.entity = { ...this.entity, ...result };
+                }
+
+                this.dynamicForm.form.markAsPristine();
+                this.dynamicForm.updateInitialState();
+
+                this.dynamicForm.form.patchValue(this.entity, { emitEvent: false });
+
                 this.isObjectModified = false;
                 this._cdr.markForCheck();
             }

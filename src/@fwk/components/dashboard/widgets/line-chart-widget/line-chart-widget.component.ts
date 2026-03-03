@@ -64,7 +64,7 @@ import { NgApexchartsModule, ChartComponent } from 'ng-apexcharts';
     `,
     hostDirectives: [{
         directive: BaseWidgetDirective,
-        inputs: ['widgetDef', 'i18nName'],
+        inputs: ['widgetDef', 'i18nName', 'globalFilters'],
         outputs: ['dataLoaded'],
     }],
     encapsulation: ViewEncapsulation.None
@@ -73,9 +73,10 @@ export class LineChartWidgetComponent implements OnInit {
     @ViewChild('chart') chart: ChartComponent;
     @Input() widgetDef: DashboardWidgetDef;
     @Input() i18nName: string;
+    @Input() globalFilters: any;
 
     public chartOptions: Partial<ApexChartOptions>;
-    
+
     private baseDirective = inject(BaseWidgetDirective);
     private cdr = inject(ChangeDetectorRef);
 
@@ -98,7 +99,7 @@ export class LineChartWidgetComponent implements OnInit {
             this.cdr.markForCheck();
         }
     }
-    
+
     hasData(): boolean {
         const series = this.widgetDef?.apexChartData?.series;
         if (!series || series.length === 0) return false;
@@ -146,7 +147,7 @@ export class LineChartWidgetComponent implements OnInit {
     onFilterChanged(value: string) {
         this.baseDirective.onFilterChanged(value);
     }
-    
+
     onRetry(): void {
         this.onFilterChanged(this.widgetDef.filterConfig?.defaultOption || 'all');
     }

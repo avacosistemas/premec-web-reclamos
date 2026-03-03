@@ -14,17 +14,16 @@ import { WidgetEmptyStateComponent } from '../widget-empty-state/widget-empty-st
     standalone: true,
     imports: [CommonModule, DecimalPipe, MatCardModule, MatIconModule, WidgetFilterComponent, WidgetSkeletonComponent, WidgetErrorStateComponent, WidgetEmptyStateComponent],
     template: `
-        <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+        <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative min-h-[120px]">
             <ng-container *ngIf="widgetDef?.isLoading; else content">
-                <div class="truncate text-lg font-medium leading-6 tracking-tight">{{ widgetDef?.title }}</div>
-                <div class="relative inset-0 flex items-center justify-center">
-                        <fwk-widget-skeleton [type]="widgetDef.type" class="w-full"></fwk-widget-skeleton>
-                    </div>
+                <div class="relative inset-0 flex items-center justify-center h-full">
+                    <fwk-widget-skeleton [type]="widgetDef.type" class="w-full"></fwk-widget-skeleton>
+                </div>
             </ng-container>
 
             <ng-template #content>
                 <ng-container *ngIf="!widgetDef.isLoading && widgetDef.hasError">
-                    <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="absolute inset-0 flex items-center justify-center p-4">
                         <fwk-widget-error-state 
                             [title]="'widget_error_title' | translate"
                             [message]="widgetDef.errorMessage"
@@ -34,55 +33,64 @@ import { WidgetEmptyStateComponent } from '../widget-empty-state/widget-empty-st
                 </ng-container>
 
                 <ng-container *ngIf="!widgetDef.hasError">
-                    <div class="flex items-start justify-between">
-                        <div class="truncate text-lg font-medium leading-6 tracking-tight">{{ widgetDef?.title }}</div>
-                        <fwk-widget-filter *ngIf="widgetDef?.filterConfig?.show"
-                            [options]="widgetDef.filterConfig.options"
-                            [initialValue]="widgetDef.filterConfig.defaultOption"
-                            (filterChange)="onFilterChanged($event)">
-                        </fwk-widget-filter>
+                    <div class="flex items-center justify-between z-10">
+                        <div class="flex flex-col">
+                            <div class="truncate text-secondary text-sm font-semibold uppercase tracking-wider">{{ widgetDef?.title }}</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <fwk-widget-filter *ngIf="widgetDef?.filterConfig?.show"
+                                [options]="widgetDef.filterConfig.options"
+                                [initialValue]="widgetDef.filterConfig.defaultOption"
+                                (filterChange)="onFilterChanged($event)">
+                            </fwk-widget-filter>
+                        </div>
                     </div>
 
-                    <div *ngIf="widgetDef.dataSource && widgetDef.dataSource.length > 0; else noData" class="mt-2 flex flex-col items-center">
+                    <div *ngIf="widgetDef.dataSource && widgetDef.dataSource.length > 0; else noData" class="flex flex-auto items-center justify-between">
                         <ng-container *ngFor="let data of widgetDef.dataSource">
-                            <div class="text-7xl font-bold leading-none tracking-tight sm:text-8xl"
-                                [ngClass]="{
-                                    'text-blue-500': data.color === 'blue' || !data.color,
-                                    'text-red-500': data.color === 'red',
-                                    'text-amber-500': data.color === 'amber',
-                                    'text-green-500': data.color === 'green'
-                                }">
-                                {{ data.mainStat | number:'1.0-0':'es' }}
+                            <div class="flex flex-col">
+                                <div class="text-4xl sm:text-5xl font-extrabold leading-none tracking-tight"
+                                    [ngClass]="{
+                                        'text-blue-600 dark:text-blue-400': data.color === 'blue' || !data.color,
+                                        'text-red-600 dark:text-red-400': data.color === 'red',
+                                        'text-amber-600 dark:text-amber-400': data.color === 'amber',
+                                        'text-green-600 dark:text-green-400': data.color === 'green'
+                                    }">
+                                    {{ data.mainStat | number:'1.0-0' }}
+                                </div>
+                                <div class="text-md font-medium text-secondary mt-1">
+                                    {{ data.mainStatLabel || widgetDef.title }}
+                                </div>
                             </div>
-                             <div class="text-lg font-medium"
-                                [ngClass]="{
-                                    'text-blue-600 dark:text-blue-500': data.color === 'blue' || !data.color,
-                                    'text-red-600 dark:text-red-500': data.color === 'red',
-                                    'text-amber-600 dark:text-amber-500': data.color === 'amber',
-                                    'text-green-600 dark:text-green-500': data.color === 'green'
-                                }">
-                                {{ data.mainStatLabel }}
-                            </div>
-                            <div *ngIf="data.secondaryStatLabel" class="text-secondary mt-5 flex w-full items-baseline justify-center">
-                                <div class="truncate text-md font-medium">{{ data.secondaryStatLabel }}</div>
-                                <div class="ml-1.5 text-lg font-semibold">{{ data.secondaryStat | number }}</div>
+                            
+                            <div *ngIf="widgetDef.icon" class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                                <mat-icon class="icon-size-8" [svgIcon]="widgetDef.icon"></mat-icon>
                             </div>
                         </ng-container>
+                    </div>
+
+                    <div *ngFor="let data of widgetDef.dataSource">
+                         <div *ngIf="data.secondaryStatLabel" class="text-secondary mt-4 flex items-center text-sm font-medium border-t pt-4">
+                            <span class="truncate">{{ data.secondaryStatLabel }}</span>
+                            <span class="ml-2 font-bold text-default">{{ data.secondaryStat | number }}</span>
+                        </div>
                     </div>
                 </ng-container>
 
                 <ng-template #noData>
-                      <fwk-widget-empty-state
+                    <div class="flex-auto flex items-center justify-center">
+                        <fwk-widget-empty-state
                             [title]="'widget_empty_title' | translate"
                             [message]="'widget_empty_message' | translate">
                         </fwk-widget-empty-state>
+                    </div>
                 </ng-template>
             </ng-template>
         </div>
     `,
     hostDirectives: [{
         directive: BaseWidgetDirective,
-        inputs: ['widgetDef', 'i18nName'],
+        inputs: ['widgetDef', 'i18nName', 'globalFilters'],
         outputs: ['dataLoaded'],
     }],
     encapsulation: ViewEncapsulation.None
@@ -90,6 +98,7 @@ import { WidgetEmptyStateComponent } from '../widget-empty-state/widget-empty-st
 export class StatCardWidgetComponent implements OnInit {
     @Input() widgetDef: DashboardWidgetDef;
     @Input() i18nName: string;
+    @Input() globalFilters: any;
 
     private baseDirective = inject(BaseWidgetDirective);
     private cdr = inject(ChangeDetectorRef);

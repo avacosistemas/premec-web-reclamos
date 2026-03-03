@@ -25,7 +25,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslatePipe } from '../../pipe/translate.pipe';
 import { FormGridModalComponent } from '../form-grid-dialog/form-grid.dialog.component';
-import { BackButtonComponent } from '../back-button/backbutton.component';
+import { BackButtonComponent } from '../back-button/backbutton.component'; 
 
 @Component({
   selector: 'fwk-crud',

@@ -16,15 +16,15 @@ export const RECLAMOS_UPDATE_FORM_FIELDS_DEF: DynamicField<any>[] = [
         colSpan: 2
     },
     {
-        key: 'asunto',
-        labelKey: 'cl_asunto',
+        key: 'maquina',
+        labelKey: 'cl_maquina',
         controlType: TEXTBOX,
         disabled: true,
         colSpan: 4
     },
     {
-        key: 'maquina',
-        labelKey: 'cl_maquina',
+        key: 'asunto',
+        labelKey: 'cl_asunto',
         controlType: TEXTBOX,
         disabled: true,
         colSpan: 4

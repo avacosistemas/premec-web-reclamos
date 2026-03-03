@@ -30,7 +30,7 @@ export type ApexChartOptions = {
     theme: ApexTheme;
     plotOptions: ApexPlotOptions;
     responsive: ApexResponsive[];
-    labels: string[]; 
+    labels: string[];
 };
 
 export interface DashboardFilterOption {
@@ -58,6 +58,18 @@ export interface StatData {
     color?: 'blue' | 'red' | 'amber' | 'green';
 }
 
+export interface DashboardFilterDef {
+    id: string;
+    type: 'select' | 'date-range';
+    labelKey?: string;
+    options?: DashboardFilterOption[];
+    defaultOption?: any;
+    params?: {
+        startKey?: string;
+        endKey?: string;
+    };
+}
+
 export interface DashboardWidgetDef {
     type: 'stat' | 'pie' | 'bar' | 'line' | 'donut' | 'widget-group' | 'content-card' | 'polarArea';
     size: 'full' | 'half' | 'third' | 'quarter';
@@ -65,6 +77,7 @@ export interface DashboardWidgetDef {
     titleKey?: string;
     children?: DashboardWidgetDef[];
     ws?: WsDef;
+    icon?: string;
     filterConfig?: DashboardFilterConfig;
     apexChartData?: Partial<ApexChartOptions>;
     dataSource?: StatData[];
@@ -79,4 +92,5 @@ export interface DashboardLayoutDef {
     sectionTitle?: string;
     sectionTitleKey?: string;
     widgets: DashboardWidgetDef[];
+    filters?: DashboardFilterDef[];
 }

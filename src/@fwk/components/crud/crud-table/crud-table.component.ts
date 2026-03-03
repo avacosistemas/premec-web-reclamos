@@ -367,6 +367,7 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
 
             const dialogRef = this.injector.get(MatDialog).open(BasicModalComponent, {
                 width: this.crud.crudDef.dialogConfig?.width || '320px',
+                maxWidth: '95vw',
                 panelClass: 'control-mat-dialog',
                 data: data
             });

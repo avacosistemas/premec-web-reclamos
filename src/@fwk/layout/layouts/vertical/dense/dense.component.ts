@@ -17,6 +17,7 @@ import { environment } from 'environments/environment';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SearchButtonComponent } from '../../../common/search-button/search-button.component';
 import { LogoComponent } from '@fwk/components/logo/logo.component';
+import { FWK_CONFIG } from '@fwk/model/fwk-config';
 
 @Component({
     selector: 'dense-layout',
@@ -44,7 +45,10 @@ export class DenseLayoutComponent implements OnInit, OnDestroy {
     navigationAppearance: 'default' | 'dense' = 'default';
     user$: Observable<User>;
     isDevMode: boolean = !environment.production;
+    showCollapseSidebarIcon: boolean = true;
+    sidebarOpened: boolean = true;
 
+    private _fwkConfig = inject(FWK_CONFIG);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
@@ -58,6 +62,8 @@ export class DenseLayoutComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        this.showCollapseSidebarIcon = this._fwkConfig.showCollapseSidebarIcon !== false;
+        this.sidebarOpened = this._fwkConfig.sidebarOpened !== false;
         this._navigationService.navigation$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe((navigation: Navigation) => {

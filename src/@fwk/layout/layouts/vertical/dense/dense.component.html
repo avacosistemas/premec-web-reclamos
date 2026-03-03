@@ -2,7 +2,7 @@
 
 <fuse-vertical-navigation class="dark bg-gray-900 print:hidden" [appearance]="navigationAppearance"
     [mode]="isScreenSmall ? 'over' : 'side'" [name]="'mainNavigation'" [navigation]="navigation.default"
-    [opened]="!isScreenSmall">
+    [opened]="sidebarOpened && !isScreenSmall">
 
     <ng-container fuseVerticalNavigationContentHeader>
         <div [routerLink]="'/'" class="flex items-center cursor-pointer justify-center h-20">
@@ -17,7 +17,8 @@
                 <mat-icon [svgIcon]="'heroicons_outline:wrench-screwdriver'"></mat-icon>
             </button>
 
-            <button class="hidden md:inline-flex" mat-icon-button (click)="toggleNavigationAppearance()">
+            <button *ngIf="showCollapseSidebarIcon" class="hidden md:inline-flex" mat-icon-button
+                (click)="toggleNavigationAppearance()">
                 <mat-icon [svgIcon]="'heroicons_outline:arrows-right-left'"></mat-icon>
             </button>
         </div>

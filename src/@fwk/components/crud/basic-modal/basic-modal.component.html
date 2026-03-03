@@ -10,7 +10,7 @@
         </button>
     </div>
 
-    <div mat-dialog-content class="flex-auto overflow-y-auto p-6 pb-6 border-t border-gray-200 dark:border-gray-600">
+    <div mat-dialog-content class="flex flex-col min-h-0 p-6 pb-6 border-t border-gray-200 dark:border-gray-600">
         <fwk-dynamic-form-component #dynamicForm [entity]="entity" [isEdit]="isEdit()" [fields]="fields"
             [subFormName]="formKey" [parentForm]="form" (onChangeEntity)="onChangeEntity($event)">
         </fwk-dynamic-form-component>

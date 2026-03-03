@@ -34,9 +34,10 @@ import { ColorPickerComponent } from '../color-picker/color-picker.component';
 import { TagsComponent } from '../tags/tags.component';
 import { UrlInputComponent } from '../url-input/url-input.component';
 import { A11yModule } from '@angular/cdk/a11y';
+import { TextFieldModule } from '@angular/cdk/text-field';
 import { IconPickerComponent } from '../icon-picker/icon-picker.component';
 import { CustomDatePickerComponent } from './custom-datepicker/custom-datepicker.component';
-import { EditorModule } from '@tinymce/tinymce-angular';
+import { HtmlEditorComponent } from '../html-editor/html-editor.component';
 
 @Component({
     selector: 'fwk-dynamic-form-component',
@@ -48,6 +49,7 @@ import { EditorModule } from '@tinymce/tinymce-angular';
         FormsModule,
         ReactiveFormsModule,
         A11yModule,
+        TextFieldModule,
         MatFormFieldModule,
         MatInputModule,
         MatSelectModule,
@@ -68,7 +70,7 @@ import { EditorModule } from '@tinymce/tinymce-angular';
         TagsComponent,
         UrlInputComponent,
         IconPickerComponent,
-        EditorModule
+        HtmlEditorComponent
     ],
     providers: [
         { provide: MAT_DATE_LOCALE, useValue: es },

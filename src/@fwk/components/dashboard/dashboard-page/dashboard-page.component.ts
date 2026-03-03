@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { DashboardLayoutDef, DashboardWidgetDef } from '@fwk/model/component-def/dashboard-def';
 import { WidgetWrapperComponent } from '../widget-wrapper/widget-wrapper.component';
 import { I18nService } from '@fwk/services/i18n-service/i18n.service';
+import { DashboardFilterComponent } from '../dashboard-filter/dashboard-filter.component';
 
 @Component({
     selector: 'fwk-dashboard-page',
     standalone: true,
-    imports: [CommonModule, WidgetWrapperComponent],
+    imports: [CommonModule, WidgetWrapperComponent, DashboardFilterComponent],
     template: `
     <div class="flex flex-col flex-auto w-full" *ngIf="layoutDef">
         <div class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-4 sm:px-6 pt-0 w-full bg-card dark:bg-transparent">
@@ -16,13 +17,21 @@ import { I18nService } from '@fwk/services/i18n-service/i18n.service';
                     {{ pageTitle }}
                 </div>
             </div>
+            
+            <div class="flex-0 mt-4 sm:mt-0">
+                <fwk-dashboard-filter *ngIf="layoutDef.filters?.length" 
+                    [filters]="layoutDef.filters" 
+                    [i18nName]="i18nName"
+                    (filterChange)="onGlobalFilterChange($event)">
+                </fwk-dashboard-filter>
+            </div>
         </div>
 
         <div class="flex-auto p-6">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+            <div class="grid grid-cols-1 sm:grid-cols-6 lg:grid-cols-12 gap-6 w-full">
                 <ng-container *ngFor="let widget of layoutDef.widgets">
                     <div [ngClass]="getSizeClasses(widget.size)">
-                        <fwk-widget-wrapper [widgetDef]="widget" [i18nName]="i18nName"></fwk-widget-wrapper>
+                        <fwk-widget-wrapper [widgetDef]="widget" [i18nName]="i18nName" [globalFilters]="globalFilters"></fwk-widget-wrapper>
                     </div>
                 </ng-container>
             </div>
@@ -35,6 +44,7 @@ export class DashboardPageComponent implements OnInit {
     @Input() i18nName: string;
 
     pageTitle: string = 'Dashboard';
+    globalFilters: any = {};
     private i18nService = inject(I18nService);
 
     ngOnInit(): void {
@@ -42,13 +52,18 @@ export class DashboardPageComponent implements OnInit {
         this.pageTitle = i18n?.translate?.('page_title') || this.layoutDef.sectionTitle || 'Dashboard';
     }
 
+    onGlobalFilterChange(filters: any): void {
+        this.globalFilters = filters;
+    }
+
     getSizeClasses(size: string): any {
         switch (size) {
-            case 'full': return 'col-span-1 sm:col-span-2 lg:col-span-4';
-            case 'half': return 'col-span-1 sm:col-span-2 lg:col-span-2';
-            case 'third': return 'col-span-1 sm:col-span-2 lg:col-span-2';
-            case 'quarter': return 'col-span-1';
-            default: return 'col-span-1';
+            case 'full': return 'col-span-1 sm:col-span-6 lg:col-span-12';
+            case 'half': return 'col-span-1 sm:col-span-3 lg:col-span-6';
+            case 'third': return 'col-span-1 sm:col-span-2 lg:col-span-4';
+            case 'two-thirds': return 'col-span-1 sm:col-span-4 lg:col-span-8';
+            case 'quarter': return 'col-span-1 sm:col-span-3 lg:col-span-3';
+            default: return 'col-span-1 sm:col-span-3 lg:col-span-3';
         }
     }
 }

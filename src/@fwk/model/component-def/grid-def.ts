@@ -20,6 +20,7 @@ export class GridDef {
     deleteTernaria?: boolean;
     columnsTernaria?: string[];
     groupActions?: boolean;
+
     deleteColumn?: any;
     titleKey?: string;
     title?: string;

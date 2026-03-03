@@ -74,7 +74,7 @@ import { NgApexchartsModule, ChartComponent } from 'ng-apexcharts';
     `,
     hostDirectives: [{
         directive: BaseWidgetDirective,
-        inputs: ['widgetDef', 'i18nName'],
+        inputs: ['widgetDef', 'i18nName', 'globalFilters'],
         outputs: ['dataLoaded'],
     }],
     encapsulation: ViewEncapsulation.None
@@ -83,6 +83,7 @@ export class BarChartWidgetComponent implements OnInit {
     @ViewChild('chart') chart: ChartComponent;
     @Input() widgetDef: DashboardWidgetDef;
     @Input() i18nName: string;
+    @Input() globalFilters: any;
 
     public chartOptions: Partial<ApexChartOptions>;
 

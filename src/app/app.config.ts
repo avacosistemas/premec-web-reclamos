@@ -1,5 +1,5 @@
 import { ApplicationConfig, importProvidersFrom, LOCALE_ID } from '@angular/core';
-import { registerLocaleData } from '@angular/common'; 
+import { registerLocaleData } from '@angular/common';
 import localeEsAr from '@angular/common/locales/es';
 
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling, withRouterConfig } from '@angular/router';
@@ -44,7 +44,12 @@ export const appConfig: ApplicationConfig = {
             appLogo: 'assets/images/logo/logo_premec.png',
             appLogoSmall: 'assets/images/logo/logo_premec.png',
             welcomeTitleLine1: 'Administrador de',
-            welcomeTitleLine2: 'Contenidos PREMEC'
+            welcomeTitleLine2: 'Contenidos PREMEC',
+            showWelcome: false,
+            urlToRedirect: '/reclamos',
+            showSearchButton: false,
+            showCollapseSidebarIcon: false,
+            sidebarOpened: false
         }),
 
         provideFwkCore(),
@@ -56,7 +61,7 @@ export const appConfig: ApplicationConfig = {
             mockApi: undefined,
             fuse: {
                 layout: 'dense',
-                scheme: getInitialScheme(), 
+                scheme: getInitialScheme(),
                 screens: {
                     sm: '600px',
                     md: '960px',

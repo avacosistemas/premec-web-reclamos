@@ -22,17 +22,17 @@ import { PolarAreaChartWidgetComponent } from '../widgets/polar-area-chart-widge
     ],
     template: `
         <ng-container [ngSwitch]="widgetDef.type">
-            <fwk-bar-chart-widget *ngSwitchCase="'bar'" [widgetDef]="widgetDef" [i18nName]="i18nName"></fwk-bar-chart-widget>
-            <fwk-pie-chart-widget *ngSwitchCase="'pie'" [widgetDef]="widgetDef" [i18nName]="i18nName"></fwk-pie-chart-widget>
-            <fwk-stat-card-widget *ngSwitchCase="'stat'" [widgetDef]="widgetDef" [i18nName]="i18nName"></fwk-stat-card-widget>
-            <fwk-line-chart-widget *ngSwitchCase="'line'" [widgetDef]="widgetDef" [i18nName]="i18nName"></fwk-line-chart-widget>
-            <fwk-doughnut-chart-widget *ngSwitchCase="'donut'" [widgetDef]="widgetDef" [i18nName]="i18nName"></fwk-doughnut-chart-widget>
-            <fwk-polar-area-chart-widget *ngSwitchCase="'polarArea'" [widgetDef]="widgetDef" [i18nName]="i18nName"></fwk-polar-area-chart-widget>
+            <fwk-bar-chart-widget *ngSwitchCase="'bar'" [widgetDef]="widgetDef" [i18nName]="i18nName" [globalFilters]="globalFilters"></fwk-bar-chart-widget>
+            <fwk-pie-chart-widget *ngSwitchCase="'pie'" [widgetDef]="widgetDef" [i18nName]="i18nName" [globalFilters]="globalFilters"></fwk-pie-chart-widget>
+            <fwk-stat-card-widget *ngSwitchCase="'stat'" [widgetDef]="widgetDef" [i18nName]="i18nName" [globalFilters]="globalFilters"></fwk-stat-card-widget>
+            <fwk-line-chart-widget *ngSwitchCase="'line'" [widgetDef]="widgetDef" [i18nName]="i18nName" [globalFilters]="globalFilters"></fwk-line-chart-widget>
+            <fwk-doughnut-chart-widget *ngSwitchCase="'donut'" [widgetDef]="widgetDef" [i18nName]="i18nName" [globalFilters]="globalFilters"></fwk-doughnut-chart-widget>
+            <fwk-polar-area-chart-widget *ngSwitchCase="'polarArea'" [widgetDef]="widgetDef" [i18nName]="i18nName" [globalFilters]="globalFilters"></fwk-polar-area-chart-widget>
             
             <div *ngSwitchCase="'widget-group'" class="flex flex-col gap-6 h-full">
                 <ng-container *ngFor="let childWidget of widgetDef.children">
                     <div [ngClass]="getFlexClass(childWidget.size)" class="flex">
-                         <fwk-widget-wrapper [widgetDef]="childWidget" [i18nName]="i18nName"></fwk-widget-wrapper>
+                         <fwk-widget-wrapper [widgetDef]="childWidget" [i18nName]="i18nName" [globalFilters]="globalFilters"></fwk-widget-wrapper>
                     </div>
                 </ng-container>
             </div>
@@ -43,6 +43,7 @@ import { PolarAreaChartWidgetComponent } from '../widgets/polar-area-chart-widge
 export class WidgetWrapperComponent {
     @Input() widgetDef: DashboardWidgetDef;
     @Input() i18nName: string;
+    @Input() globalFilters: any;
 
     getFlexClass(size: string): string {
         switch (size) {

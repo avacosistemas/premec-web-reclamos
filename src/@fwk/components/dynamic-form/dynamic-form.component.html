@@ -1,5 +1,5 @@
-﻿<form *ngIf="form" #formDirective="ngForm"
-    class="dynamicFormDiv grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" [formGroup]="form" novalidate>
+﻿<form *ngIf="form" #formDirective="ngForm" class="dynamicFormDiv grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+    [formGroup]="form" novalidate>
 
     <div *ngFor="let field of fields; let i = index" class="dynamicFieldDiv" [class]="field.cssClass || ''" [ngClass]="{
                 'hidden': field.controlType === 'hidden',
@@ -10,8 +10,7 @@
             }">
 
         <ng-container [ngSwitch]="field.controlType">
-            <fwk-url-input *ngSwitchCase="'url_input'" class="w-full" [config]="field"
-                [formControlName]="field.key"
+            <fwk-url-input *ngSwitchCase="'url_input'" class="w-full" [config]="field" [formControlName]="field.key"
                 [errorMessage]="(form.get(field.key)?.invalid && form.get(field.key)?.touched) ? getMessageErrorValidation(field) : null"
                 [cdkFocusInitial]="i === firstFocusableFieldIndex">
             </fwk-url-input>
@@ -181,14 +180,16 @@
                 <!-- <label *ngIf="field.label" class="block text-sm font-medium text-secondary mb-3">
                     {{ field.label }}
                 </label> -->
-                <ng-container *ngIf="field.value; else noImagePreview">
-                    <img [src]="'data:image/jpeg;base64,' + field.value" alt="Previsualización"
+                <ng-container *ngIf="form.get(field.key)?.value || field.value; else noImagePreview">
+                    <img [src]="'data:image/jpeg;base64,' + (form.get(field.key)?.value || field.value)"
+                        alt="Previsualización"
                         class="border-2 dark:border-gray-700 transition-transform hover:scale-105 duration-300"
                         [ngClass]="{
                             'rounded-full aspect-square object-cover': field.options?.shape === 'circle',
                             'rounded-xl aspect-square object-cover': field.options?.shape === 'square',
                             'rounded-md max-w-full h-auto object-contain': !field.options?.shape || field.options?.shape === 'original'
-                        }" [style.width]="field.options?.width || (field.options?.shape !== 'original' ? '150px' : '100%')"
+                        }"
+                        [style.width]="field.options?.width || (field.options?.shape !== 'original' ? '150px' : '100%')"
                         [style.height]="field.options?.height || (field.options?.shape !== 'original' ? '150px' : 'auto')"
                         [style.object-fit]="field.options?.objectFit || 'cover'" />
                 </ng-container>
@@ -199,7 +200,8 @@
                             'rounded-full aspect-square': field.options?.shape === 'circle',
                             'rounded-xl aspect-square': field.options?.shape === 'square',
                             'rounded-lg w-full h-48': !field.options?.shape || field.options?.shape === 'original'
-                        }" [style.width]="field.options?.width || (field.options?.shape !== 'original' ? '150px' : '100%')"
+                        }"
+                        [style.width]="field.options?.width || (field.options?.shape !== 'original' ? '150px' : '100%')"
                         [style.height]="field.options?.height || (field.options?.shape !== 'original' ? '150px' : 'auto')">
 
                         <mat-icon class="icon-size-8 mb-1" svgIcon="heroicons_outline:photo"></mat-icon>
@@ -209,27 +211,9 @@
             </div>
 
             <div *ngSwitchCase="'html_editor'">
-                <editor apiKey="30exq1o6h95wnouv3k486ppncqum1zcx7p75i83kwg546eld" [formControlName]="field.key"
-                    initialValue="{{field.value}}" [init]="{
-                language: 'es',
-                language_url: '/assets/tinymce/langs/es.js',
-                base_url: '/tinymce',
-                suffix: '.min',
-                custom_elements:'style',
-                allow_unsafe_link_target: true,
-                allow_html_in_named_anchor: true,
-                height: 300,
-                promotion: false,
-                menubar: true,
-                plugins: 'preview importcss searchreplace autolink autosave save directionality code visualblocks visualchars fullscreen image link media codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help charmap quickbars emoticons',
-                toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen  preview save print | insertfile image media link anchor codesample | ltr rtl',
-                toolbar_sticky: true,
-                toolbar_mode: 'sliding',        
-                contextmenu: 'link image table',
-                quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote quickimage quicktable',
-                cleanup: false,
-                extended_valid_elements: '*[*]'
-                }"></editor>
+                <fwk-html-editor class="w-full" [formControlName]="field.key" [field]="field"
+                    [errorMessage]="(form.get(field.key)?.invalid && form.get(field.key)?.touched) ? getMessageErrorValidation(field) : null">
+                </fwk-html-editor>
             </div>
 
         </ng-container>

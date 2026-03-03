@@ -178,55 +178,58 @@
 }
 
 .scroll-shadow-zone {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 40px;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  
-  transition: all 0.3s ease;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 
-  mat-icon {
-    color: white;
-    background: rgba(0,0,0,0.5);
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    font-size: 24px;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
+    transition: all 0.3s ease;
 
-  &:hover {
-    width: 50px;
     mat-icon {
-      opacity: 1; 
+        color: white;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        font-size: 24px;
+        opacity: 0;
+        transition: opacity 0.2s;
     }
-  }
+
+    &:hover {
+        width: 50px;
+
+        mat-icon {
+            opacity: 1;
+        }
+    }
 }
 
 .left-zone {
-  left: 0;
-  background: linear-gradient(to right, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 40%, rgba(0, 0, 0, 0) 100%);
+    left: 0;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 40%, rgba(0, 0, 0, 0) 100%);
 }
 
 .right-zone {
-  right: 0;
-  background: linear-gradient(to left, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 40%, rgba(0, 0, 0, 0) 100%);
+    right: 0;
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 40%, rgba(0, 0, 0, 0) 100%);
 }
 
-:host-context(.dark), .dark .scroll-shadow-zone {
+:host-context(.dark),
+.dark .scroll-shadow-zone {
     mat-icon {
         color: black;
-        background: rgba(255,255,255,0.6);
     }
+
     &.left-zone {
         background: linear-gradient(to right, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
     }
+
     &.right-zone {
         background: linear-gradient(to left, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
     }

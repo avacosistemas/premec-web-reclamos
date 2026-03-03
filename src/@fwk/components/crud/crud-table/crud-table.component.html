@@ -69,7 +69,7 @@
                                             <mat-icon [svgIcon]="'heroicons_outline:ellipsis-vertical'"
                                                 class="bg-transparent"></mat-icon>
                                         </button>
-                                        <mat-menu #actionsMenu="matMenu" class="rounded-xl">
+                                        <mat-menu #actionsMenu="matMenu" class="rounded-xl crud-actions-menu">
                                             <ng-container *ngFor="let action of actions">
                                                 <button mat-menu-item (click)="submitAction(action, element, $event)">
                                                     <ng-container *ngIf="action.icon">

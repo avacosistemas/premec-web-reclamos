@@ -230,36 +230,48 @@ export class CrudModalComponent extends AbstractComponent implements OnInit, Aft
               this.notificationService.notifySuccess(this.translate('success_message'));
 
               if (andContinue) {
-                const persistentValues: any = {};
-                this.fields.forEach(f => {
-                  if (f.mappingQuerystring || f.controlType === 'hidden') {
-                    const controlValue = subForm?.get(f.key)?.value;
-                    if (controlValue !== undefined) {
-                      persistentValues[f.key] = controlValue;
+                if (this.isAdd) {
+                  const persistentValues: any = {};
+                  this.fields.forEach(f => {
+                    if (f.mappingQuerystring || f.controlType === 'hidden') {
+                      const controlValue = subForm?.get(f.key)?.value;
+                      if (controlValue !== undefined) {
+                        persistentValues[f.key] = controlValue;
+                      }
+                    }
+                  });
+
+                  this.entity = { ...this.newObjectEntity(), ...persistentValues };
+                  delete this.entity.id;
+
+                  if (subForm) {
+                    subForm.reset();
+                    subForm.patchValue(persistentValues);
+                  }
+
+                  if (this.dynamicForm) {
+                    this.dynamicForm.entity = this.entity;
+                    this.dynamicForm.updateInitialState();
+                  }
+
+                  this.isObjectModified = false;
+                } else {
+                  if (response && typeof response === 'object' && (response.id || response.Guid)) {
+                    this.entity = { ...this.entity, ...response };
+                  }
+
+                  if (this.dynamicForm) {
+                    this.dynamicForm.form.markAsPristine();
+                    this.dynamicForm.updateInitialState();
+                    if (response && typeof response === 'object') {
+                      this.dynamicForm.form.patchValue(this.entity, { emitEvent: false });
                     }
                   }
-                });
-
-                this.entity = { ...this.newObjectEntity(), ...persistentValues };
-                delete this.entity.id;
-
-                if (subForm) {
-                  subForm.reset();
-                  subForm.patchValue(persistentValues);
+                  this.isObjectModified = false;
                 }
-
-                if (this.dynamicForm) {
-                  this.dynamicForm.entity = this.entity;
-                  this.dynamicForm.updateInitialState();
-                }
-
-                this.isObjectModified = false;
-                this.isAdd = true;
-                this._isEdit = false;
 
                 this.submitting = false;
                 this._cdr.markForCheck();
-
               } else {
                 this.dialogRef.close(response || true);
               }

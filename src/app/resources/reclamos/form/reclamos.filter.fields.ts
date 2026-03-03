@@ -1,5 +1,5 @@
 import { DynamicField, SELECT, AUTOCOMPLETE, NUMBER, DATEPICKER } from "@fwk/model/dynamic-form/dynamic-field";
-import { MAQUINAS_MOCK_DATA } from "../api-mock/reclamos.mock";
+import { PREFIX_DOMAIN_API } from "environments/environment";
 
 export const RECLAMOS_FILTER_FORM_FIELDS_DEF: DynamicField<any>[] = [
     {
@@ -13,9 +13,12 @@ export const RECLAMOS_FILTER_FORM_FIELDS_DEF: DynamicField<any>[] = [
         labelKey: 'fl_maquina',
         controlType: AUTOCOMPLETE,
         options: {
-            fromData: MAQUINAS_MOCK_DATA,
-            elementLabel: 'name',
-            elementValue: 'name'
+            fromWs: { 
+                key: 'customer_equipment_filter', 
+                url: PREFIX_DOMAIN_API + 'customer/equipment' 
+            },
+            elementLabel: 'InternalSerialNum',
+            elementValue: 'EquipmentCardNum'
         },
         colSpan: 1
     },
