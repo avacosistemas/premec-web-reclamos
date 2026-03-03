@@ -45,7 +45,7 @@ export const FWK_I18N_DEF = {
     sign_in_error_message: 'Usuario o contraseña incorrectos. Inténtelo de nuevo.',
     sign_in_link: 'Iniciar Sesión',
     sign_in_title: 'Iniciar Sesión',
-    sign_in_welcome_subtitle: 'Bienvenido al panel de administración. Desde aquí podrás gestionar tu sistema.',
+    sign_in_welcome_subtitle: '¡Bienvenido! Desde aquí podrás gestionar tus reclamos.',
     sign_in_welcome_title_1: 'Administrador de',
     sign_in_welcome_title_2: 'Contenidos {{appName}}',
     remember_me_label: 'Recordarme',
