@@ -44,7 +44,7 @@ export const appConfig: ApplicationConfig = {
             appLogo: 'assets/images/logo/logo_premec.png',
             appLogoSmall: 'assets/images/logo/logo_premec.png',
             welcomeTitleLine1: 'Administrador de',
-            welcomeTitleLine2: 'Contenidos PREMEC',
+            welcomeTitleLine2: 'Reclamos PREMEC',
             showWelcome: false,
             urlToRedirect: '/reclamos',
             showSearchButton: false,

@@ -13,8 +13,8 @@ export const RECLAMOS_CREATE_FORM_FIELDS_DEF: DynamicField<any>[] = [
                 key: 'customer_equipment',
                 url: PREFIX_DOMAIN_API + 'customer/equipment'
             },
-            elementLabel: 'InternalSerialNum',
-            elementValue: 'EquipmentCardNum',
+            elementLabel: 'label',
+            elementValue: 'internalSerialNum',
             minTermLength: 1,
             searchOnFocus: true
         },

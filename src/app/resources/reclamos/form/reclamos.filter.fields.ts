@@ -17,8 +17,8 @@ export const RECLAMOS_FILTER_FORM_FIELDS_DEF: DynamicField<any>[] = [
                 key: 'customer_equipment_filter', 
                 url: PREFIX_DOMAIN_API + 'customer/equipment' 
             },
-            elementLabel: 'InternalSerialNum',
-            elementValue: 'EquipmentCardNum'
+            elementLabel: 'label',
+            elementValue: 'internalSerialNum'
         },
         colSpan: 1
     },

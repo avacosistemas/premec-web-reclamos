@@ -16,8 +16,8 @@ export interface FwkConfig {
 export const DEFAULT_FWK_CONFIG: FwkConfig = {
     appName: 'FRAMEWORK',
     appLogo: 'assets/images/logo/logo.png',
-    welcomeTitleLine1: 'Administrador de',
-    welcomeTitleLine2: 'Contenidos',
+    welcomeTitleLine1: 'Gesto de',
+    welcomeTitleLine2: 'Reclamos',
     showWelcome: true,
     urlToRedirect: '/dashboard',
     showSearchButton: true,

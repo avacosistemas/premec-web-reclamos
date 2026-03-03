@@ -47,7 +47,7 @@ export const FWK_I18N_DEF = {
     sign_in_title: 'Iniciar Sesión',
     sign_in_welcome_subtitle: '¡Bienvenido! Desde aquí podrás gestionar tus reclamos.',
     sign_in_welcome_title_1: 'Administrador de',
-    sign_in_welcome_title_2: 'Contenidos {{appName}}',
+    sign_in_welcome_title_2: 'Reclamos {{appName}}',
     remember_me_label: 'Recordarme',
     username_label: 'Usuario',
     username_required_error: 'El usuario es requerido',
