@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { CrudRegistryService } from '@fwk/services/crud-registry.service';
 import { I18nService } from '@fwk/services/i18n-service/i18n.service';
 import { FWK_I18N_DEF } from '@fwk/i18n/fwk.i18n';
+import { APP_I18N_DEF } from './core/i18n/app.i18n';
 
 @Component({
     selector: 'app-root',
@@ -22,5 +23,6 @@ export class AppComponent {
 
     private registerGlobalI18n(): void {
         this.i18nService.addI18n(FWK_I18N_DEF as any);
+        this.i18nService.addI18n(APP_I18N_DEF as any);
     }
 }

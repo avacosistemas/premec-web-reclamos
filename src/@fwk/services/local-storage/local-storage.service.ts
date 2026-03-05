@@ -1,9 +1,10 @@
 ﻿import { Injectable } from '@angular/core';
 import { I18n } from '../../model/i18n';
+import { environment } from 'environments/environment';
 
 export interface UserCredentials {
     username: string;
-    password?: string; 
+    password?: string;
 }
 
 export const LOGIN_FORM_USERDATA = 'LOGIN_FORM_USERDATA';
@@ -12,11 +13,11 @@ export const TO_CLONE_DATA = 'TO_CLONE_DATA';
 export const USER_DATA_FOR_FORCE_CHANGE_PASSWORD = 'USER_DATA_FOR_FORCE_CHANGE_PASSWORD';
 
 @Injectable({
-    providedIn: 'root' 
+    providedIn: 'root'
 })
 export class LocalStorageService {
-    private tokenKey = 'jwt_token';
-    private USER_DATA = 'currentUser';
+    private tokenKey = environment.appId + '_jwt_token';
+    private USER_DATA = environment.appId + '_currentUser';
 
     constructor() { }
 
@@ -37,41 +38,41 @@ export class LocalStorageService {
     }
 
     cleanLoginFormUserData(): void {
-        localStorage.removeItem(LOGIN_FORM_USERDATA);
+        localStorage.removeItem(environment.appId + '_' + LOGIN_FORM_USERDATA);
     }
 
     saveLoginFormUserData(user: UserCredentials): void {
-        localStorage.setItem(LOGIN_FORM_USERDATA, JSON.stringify(user));
+        localStorage.setItem(environment.appId + '_' + LOGIN_FORM_USERDATA, JSON.stringify(user));
     }
 
     getLoginFormUserData(): UserCredentials | null {
-        const storedData = localStorage.getItem(LOGIN_FORM_USERDATA);
+        const storedData = localStorage.getItem(environment.appId + '_' + LOGIN_FORM_USERDATA);
         return storedData ? JSON.parse(storedData) : null;
     }
 
     cleanUserDataForForceChangePassword(): void {
-        localStorage.removeItem(USER_DATA_FOR_FORCE_CHANGE_PASSWORD);
+        localStorage.removeItem(environment.appId + '_' + USER_DATA_FOR_FORCE_CHANGE_PASSWORD);
     }
 
     saveUserDataForForceChangePassword(user: UserCredentials): void {
-        localStorage.setItem(USER_DATA_FOR_FORCE_CHANGE_PASSWORD, JSON.stringify(user));
+        localStorage.setItem(environment.appId + '_' + USER_DATA_FOR_FORCE_CHANGE_PASSWORD, JSON.stringify(user));
     }
 
     getUserDataForForceChangePassword(): UserCredentials | null {
-        const storedData = localStorage.getItem(USER_DATA_FOR_FORCE_CHANGE_PASSWORD);
+        const storedData = localStorage.getItem(environment.appId + '_' + USER_DATA_FOR_FORCE_CHANGE_PASSWORD);
         return storedData ? JSON.parse(storedData) : null;
     }
 
     cleanI18nData(): void {
-        localStorage.removeItem(I18N_DATA);
+        localStorage.removeItem(environment.appId + '_' + I18N_DATA);
     }
 
     saveI18nData(i18n: I18n[]): void {
-        localStorage.setItem(I18N_DATA, JSON.stringify(i18n));
+        localStorage.setItem(environment.appId + '_' + I18N_DATA, JSON.stringify(i18n));
     }
 
     getI18nData(): I18n[] | null {
-        const storedData = localStorage.getItem(I18N_DATA);
+        const storedData = localStorage.getItem(environment.appId + '_' + I18N_DATA);
         return storedData ? JSON.parse(storedData) : null;
     }
 
@@ -86,16 +87,16 @@ export class LocalStorageService {
     }
 
     save(key: string, obj: any): void {
-        localStorage.setItem(key, JSON.stringify(obj));
+        localStorage.setItem(environment.appId + '_' + key, JSON.stringify(obj));
     }
 
     get<T>(key: string): T | null {
-        const storedData = localStorage.getItem(key);
+        const storedData = localStorage.getItem(environment.appId + '_' + key);
         return storedData ? JSON.parse(storedData) : null;
     }
 
     remove(key: string): void {
-        localStorage.removeItem(key);
+        localStorage.removeItem(environment.appId + '_' + key);
     }
 
     getUserLocalStorage(): any {

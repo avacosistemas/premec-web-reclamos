@@ -11,13 +11,15 @@ export interface FwkConfig {
     showSearchButton?: boolean;
     showCollapseSidebarIcon?: boolean;
     sidebarOpened?: boolean;
+    signInWelcomeSubtitle?: string;
+    urlToRedirectOnLogout?: string;
 }
 
 export const DEFAULT_FWK_CONFIG: FwkConfig = {
     appName: 'FRAMEWORK',
     appLogo: 'assets/images/logo/logo.png',
-    welcomeTitleLine1: 'Gesto de',
-    welcomeTitleLine2: 'Reclamos',
+    welcomeTitleLine1: 'Administrador de',
+    welcomeTitleLine2: 'Contenidos',
     showWelcome: true,
     urlToRedirect: '/dashboard',
     showSearchButton: true,

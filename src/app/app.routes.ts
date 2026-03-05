@@ -8,6 +8,7 @@ import { SignedInRedirectComponent } from '@fwk/auth/guards/signed-in-redirect.c
 import { CRUD_MODULES } from 'app/core/registries/crud.registry';
 import { generateFwkPageRoutes } from '@fwk/utils/crud-route-generator';
 import { DevModeGuard } from '@fwk/auth/guards/dev-mode.guard';
+import { environment } from 'environments/environment';
 
 export const appRoutes: Route[] = [
     {
@@ -52,7 +53,7 @@ export const appRoutes: Route[] = [
                 data: { layout: 'empty' },
                 loadChildren: () => import('@fwk/auth/components/change-password/change-password.routes')
             },
-            { path: 'welcome', loadChildren: () => import('app/modules/welcome/welcome.routes') },
+            ...(environment.customRoutes || []),
             ...CRUD_MODULES.map(crudModule => ({
                 path: crudModule.path,
                 data: {

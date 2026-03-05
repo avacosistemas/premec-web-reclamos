@@ -9,7 +9,7 @@ import { I18nService } from '@fwk/services/i18n-service/i18n.service';
 export class TranslatePipe implements PipeTransform {
   private i18nService = inject(I18nService);
 
-  transform(key: string, args?: any, dictionaryName: string = 'fwk'): string {
+  transform(key: string, args?: any, dictionaryName: string = 'app'): string {
     let params: any = {};
     let targetDictionary = dictionaryName;
 

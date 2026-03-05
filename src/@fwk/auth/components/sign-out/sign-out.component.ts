@@ -4,8 +4,9 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@fwk/auth/auth.service';
 import { TranslatePipe } from '@fwk/pipe/translate.pipe';
 import { I18nService } from '@fwk/services/i18n-service/i18n.service';
-import { finalize, Subject, switchMap, takeUntil, takeWhile, tap, timer } from 'rxjs';
+import { timer, takeWhile, tap, finalize, switchMap, Subject, takeUntil } from 'rxjs';
 import { LogoComponent } from '@fwk/components/logo/logo.component';
+import { FWK_CONFIG, FwkConfig } from '@fwk/model/fwk-config';
 
 @Component({
     selector: 'auth-sign-out',
@@ -26,6 +27,9 @@ export class AuthSignOutComponent implements OnInit, OnDestroy {
     private _authService = inject(AuthService);
     private _router = inject(Router);
     private _i18nService = inject(I18nService);
+    private _fwkConfig = inject(FWK_CONFIG);
+
+    public fallbackRedirectUrl = '/sign-in';
 
     constructor() { }
 
@@ -40,7 +44,8 @@ export class AuthSignOutComponent implements OnInit, OnDestroy {
                 this.updateCountdownMessage();
             }),
             finalize(() => {
-                window.location.assign('/sign-in');
+                const targetUrl = this._fwkConfig.urlToRedirectOnLogout || this.fallbackRedirectUrl;
+                window.location.assign(targetUrl);
             }),
             takeUntil(this._unsubscribeAll)
         ).subscribe();
@@ -54,5 +59,11 @@ export class AuthSignOutComponent implements OnInit, OnDestroy {
     private updateCountdownMessage(): void {
         const baseMessage = this._i18nService.translate('sign_out_redirect_countdown');
         this.countdownMessage = baseMessage.replace('{{countdown}}', this.countdown.toString());
+    }
+
+    manualRedirect(): void {
+        this.countdown = 0;
+        const targetUrl = this._fwkConfig.urlToRedirectOnLogout || this.fallbackRedirectUrl;
+        window.location.assign(targetUrl);
     }
 }

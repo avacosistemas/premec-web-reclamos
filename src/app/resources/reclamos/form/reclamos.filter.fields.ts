@@ -13,9 +13,9 @@ export const RECLAMOS_FILTER_FORM_FIELDS_DEF: DynamicField<any>[] = [
         labelKey: 'fl_maquina',
         controlType: AUTOCOMPLETE,
         options: {
-            fromWs: { 
-                key: 'customer_equipment_filter', 
-                url: PREFIX_DOMAIN_API + 'customer/equipment' 
+            fromWs: {
+                key: 'customer_equipment_filter',
+                url: PREFIX_DOMAIN_API + 'customer/equipment'
             },
             elementLabel: 'label',
             elementValue: 'internalSerialNum'

@@ -15,7 +15,7 @@ export class I18nService extends BaseService {
         super(injector);
     }
 
-    translate(key: string, dictionaryName: string = 'fwk'): string {
+    translate(key: string, dictionaryName: string = 'app'): string {
         const dict = this.getDictionary(dictionaryName);
         let translation = dict?.translate?.(key);
 

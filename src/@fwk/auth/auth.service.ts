@@ -23,11 +23,11 @@ export class AuthService implements AbstractAuthService {
     private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
     private _refreshTimeout: any;
 
-    private readonly TOKEN_KEY = 'accessToken';
-    private readonly USER_DATA_KEY = 'currentUser';
+    private readonly TOKEN_KEY = environment.appId + '_accessToken';
+    private readonly USER_DATA_KEY = environment.appId + '_currentUser';
 
     get authenticated$(): Observable<boolean> { return this._authenticated.asObservable(); }
-
+ 
     signIn(credentials: SignInData): Observable<any> {
         return this._httpClient.post(environment.auth.signIn, credentials, { responseType: 'json' }).pipe(
             tap((responseFromApi: any) => {
@@ -112,7 +112,7 @@ export class AuthService implements AbstractAuthService {
     }
 
     hasPermission(permission?: string): boolean {
-        if (!environment.production) {
+        if (!environment.security) {
             return true;
         }
         if (!permission) {

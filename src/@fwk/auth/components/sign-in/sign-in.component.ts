@@ -41,6 +41,7 @@ export class AuthSignInComponent implements OnInit {
 
     private _localStorageService = inject(LocalStorageService);
     private _userService = inject(UserService);
+    private _i18nService = inject(I18nService);
     private readonly REMEMBER_KEY = 'remembered_user';
 
     alert: { type: FuseAlertType; message: string } = {
@@ -55,8 +56,7 @@ export class AuthSignInComponent implements OnInit {
         private _activatedRoute: ActivatedRoute,
         private _authService: AuthService,
         private _formBuilder: FormBuilder,
-        private _router: Router,
-        private _i18nService: I18nService,
+        private _router: Router
     ) { }
 
     ngOnInit(): void {

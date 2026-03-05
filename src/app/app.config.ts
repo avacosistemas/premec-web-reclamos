@@ -14,6 +14,7 @@ import { provideFwkAuth, provideAppAuth } from '@fwk/auth/auth.provider';
 import { provideFwkCore } from '@fwk/providers/core.provider';
 import { provideAppNavigation } from '@fwk/navigation/navigation.provider';
 import { provideFwkBranding } from '@fwk/providers/config.provider';
+import { environment } from 'environments/environment';
 
 registerLocaleData(localeEsAr, 'es-AR');
 
@@ -39,18 +40,7 @@ export const appConfig: ApplicationConfig = {
         ),
         importProvidersFrom(MatDialogModule),
 
-        provideFwkBranding({
-            appName: 'PREMEC',
-            appLogo: 'assets/images/logo/logo_premec.png',
-            appLogoSmall: 'assets/images/logo/logo_premec.png',
-            welcomeTitleLine1: 'Administrador de',
-            welcomeTitleLine2: 'Reclamos PREMEC',
-            showWelcome: false,
-            urlToRedirect: '/reclamos',
-            showSearchButton: false,
-            showCollapseSidebarIcon: false,
-            sidebarOpened: false
-        }),
+        provideFwkBranding(environment.appConfig),
 
         provideFwkCore(),
         provideFwkAuth(),
