@@ -36,6 +36,12 @@ export const RECLAMOS_I18N_DEF: I18n = {
         'f_tipo': 'Tipo de Problema',
         'f_subtipo': 'Subtipo de Problema',
         'f_comentario': 'Agregar Comentario',
-        'create_access_denied_message': 'Para poder cargar un nuevo reclamo deberá comunicarse con administración.'
+        'f_prioridad': 'Prioridad',
+        'f_prioridad_baja': 'Funciona',
+        'f_prioridad_alta': 'No Funciona',
+        'msg_prioridad_baja': 'Te asistiremos en la proxima semana.',
+        'msg_prioridad_alta': 'Atenderemos tu reclamo en las proximas 48 hs.',
+        'create_access_denied_message': 'Para poder cargar un nuevo reclamo deberá comunicarse con administración.',
+        'maquina_sin_tipo_error': 'No es posible determinar el tipo de máquina seleccionada. Por favor, póngase en contacto con Premec'
     }
 };

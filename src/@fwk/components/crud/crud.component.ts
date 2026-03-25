@@ -1,4 +1,4 @@
-﻿import {
+import {
   Component, OnInit, OnDestroy, Input, Output, EventEmitter,
   ViewEncapsulation, Injector, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild
 } from '@angular/core';

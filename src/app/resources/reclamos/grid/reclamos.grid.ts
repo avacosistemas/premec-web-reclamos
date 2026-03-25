@@ -4,15 +4,16 @@ import { FILTER_TYPE } from "@fwk/services/filter-service/filter.service";
 
 export const RECLAMOS_GRID_DEF: GridDef = {
     columnsDef: [
-        { columnDef: 'numero', columnNameKey: 'cl_numero', id: true },
+        { columnDef: 'serviceCallID', columnNameKey: 'cl_numero', id: true },
         {
-            columnDef: 'estado',
+            columnDef: 'estadoReclamo',
             columnNameKey: 'cl_estado',
             cellRender: (row: any) => {
-                const status = row.estado || 'Pendiente';
+                const status = row.estadoReclamo || 'Pendiente';
                 let colorClasses = '';
                 switch (status) {
-                    case 'Pendiente': colorClasses = 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500'; break;
+                    case 'Pendiente':
+                    case 'Abierto': colorClasses = 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-500'; break;
                     case 'Asignado': colorClasses = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-500'; break;
                     case 'Iniciado':
                     case 'En Proceso': colorClasses = 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-500'; break;
@@ -23,13 +24,12 @@ export const RECLAMOS_GRID_DEF: GridDef = {
             }
         },
         { columnDef: 'asunto', columnNameKey: 'cl_asunto' },
-        { columnDef: 'maquina', columnNameKey: 'cl_maquina' },
-        { columnDef: 'fechaCreacion', columnNameKey: 'cl_fecha_creacion', columnType: 'datehour' },
-        { columnDef: 'fechaAsignacion', columnNameKey: 'cl_fecha_asignacion', columnType: 'datehour' },
-        { columnDef: 'fechaInicio', columnNameKey: 'cl_fecha_inicio', columnType: 'datehour' },
-        { columnDef: 'fechaFin', columnNameKey: 'cl_fecha_fin', columnType: 'datehour' }
+        { columnDef: 'internalSN', columnNameKey: 'cl_maquina' },
+        { columnDef: 'fechaCreacion', columnNameKey: 'cl_fecha_creacion' },
+        { columnDef: 'fechaInicioActividad', columnNameKey: 'cl_fecha_inicio' },
+        { columnDef: 'fechaFinActividad', columnNameKey: 'cl_fecha_fin' }
     ],
-    displayedColumns: ['numero', 'estado', 'asunto', 'maquina', 'fechaCreacion', 'fechaAsignacion', 'fechaInicio', 'fechaFin'],
+    displayedColumns: ['serviceCallID', 'estadoReclamo', 'asunto', 'internalSN', 'fechaCreacion', 'fechaInicioActividad', 'fechaFinActividad'],
     actions: [
         {
             actionNameKey: 'action_editar',
@@ -41,7 +41,7 @@ export const RECLAMOS_GRID_DEF: GridDef = {
     displayedActionsCondition: [
         {
             key: 'action_editar',
-            expression: { key: 'estado', compare: FILTER_TYPE.NOTEQUALS, value: 'Cerrado' }
+            expression: { key: 'estadoReclamo', compare: FILTER_TYPE.NOTEQUALS, value: 'Cerrado' }
         }
     ],
     groupActions: false,

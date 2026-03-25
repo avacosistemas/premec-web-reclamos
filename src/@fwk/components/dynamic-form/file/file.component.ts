@@ -1,4 +1,4 @@
-﻿import { Component, Input, forwardRef, ElementRef, ViewChild, ChangeDetectorRef, Optional, Host, SkipSelf, HostListener } from '@angular/core';
+import { Component, Input, forwardRef, ElementRef, ViewChild, ChangeDetectorRef, Optional, Host, SkipSelf, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, Validator, AbstractControl, ValidationErrors, NG_VALIDATORS, FormsModule, ControlContainer, FormGroup } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -194,7 +194,23 @@ export class FileComponent implements ControlValueAccessor, Validator {
     }
 
     private updateValue(): void {
-        const value = this.isMultiple ? this.files.map(f => f.byteArray) : (this.files[0]?.byteArray || null);
+        const outputFormat = this.field?.options?.outputFormat ?? 'byteArray';
+        let value = null;
+
+        if (this.isMultiple) {
+            value = this.files.map(f => {
+                if (outputFormat === 'object') {
+                    return { archivo: f.base64, nombre: f.name };
+                }
+                return f.byteArray;
+            });
+        } else {
+            const f = this.files[0];
+            if (f) {
+                value = outputFormat === 'object' ? { archivo: f.base64, nombre: f.name } : f.byteArray;
+            }
+        }
+
         this.onChange(value);
         this.onTouch();
         this.cdr.markForCheck();

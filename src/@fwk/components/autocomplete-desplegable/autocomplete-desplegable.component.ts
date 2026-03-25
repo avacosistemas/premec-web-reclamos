@@ -1,4 +1,5 @@
-﻿import { Component, OnInit, Input, forwardRef, OnDestroy, ViewChild, ChangeDetectorRef, Optional, Host, SkipSelf } from '@angular/core';
+import { Component, OnInit, Input, forwardRef, OnDestroy, ViewChild, ChangeDetectorRef, Optional, Host, SkipSelf, ElementRef } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, Validator, FormControl, AbstractControl, ValidationErrors, NG_VALIDATORS, ReactiveFormsModule, FormGroupDirective, NgForm, ControlContainer, FormGroup } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,8 +9,10 @@ import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material
 import { MatOptionModule, ErrorStateMatcher } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Subject, Observable, of, merge } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, takeUntil, startWith, filter } from "rxjs/operators";
+import { Subject, Observable, of, merge, timer } from 'rxjs';
+
+import { debounceTime, distinctUntilChanged, switchMap, takeUntil, startWith, filter, debounce } from "rxjs/operators";
+
 import { ApiAutocompleteConfiguration, AutocompleteSearchTerm } from '../autocomplete/autocomplete.interface';
 import { environment } from '../../../environments/environment';
 import { TranslatePipe } from '../../pipe/translate.pipe';
@@ -59,6 +62,8 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
     @Input() errorMessage: string | null = null;
 
     @ViewChild('autoCompleteInput', { read: MatAutocompleteTrigger }) autoCompleteTrigger!: MatAutocompleteTrigger;
+    @ViewChild('autoCompleteInput') inputElement!: ElementRef<HTMLInputElement>;
+
 
     autocompleteControl = new FormControl<string | object | null>(null);
     filteredOptions$: Observable<any[]> = of([]);
@@ -107,20 +112,36 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
     private updateSiblingField(value: any): void {
         const options = this.config?.options as AutocompleteOptions;
 
-        if (options?.transferIdToField && this.controlContainer && this.controlContainer.control) {
+        if (this.controlContainer && this.controlContainer.control) {
             const formGroup = this.controlContainer.control as FormGroup;
-            const targetControl = formGroup.get(options.transferIdToField);
 
-            if (targetControl) {
-                let valToSet = null;
-                if (value && typeof value === 'object') {
-                    valToSet = options.elementValue ? value[options.elementValue] : value.id;
-                }
+            if (options?.transferIdToField) {
+                const targetControl = formGroup.get(options.transferIdToField);
+                if (targetControl) {
+                    let valToSet = null;
+                    if (value && typeof value === 'object') {
+                        valToSet = options.elementValue ? value[options.elementValue] : value.id;
+                    }
 
-                if (targetControl.value !== valToSet) {
-                    targetControl.setValue(valToSet);
-                    targetControl.markAsDirty();
+                    if (targetControl.value !== valToSet) {
+                        targetControl.setValue(valToSet);
+                        targetControl.markAsDirty();
+                    }
                 }
+            }
+
+            if (options?.transferMap && value && typeof value === 'object') {
+                Object.keys(options.transferMap).forEach(targetKey => {
+                    const sourceProp = (options.transferMap as any)[targetKey];
+                    const targetControl = formGroup.get(targetKey);
+                    if (targetControl && value[sourceProp] !== undefined) {
+                        const valToSet = value[sourceProp];
+                        if (targetControl.value !== valToSet) {
+                            targetControl.setValue(valToSet);
+                            targetControl.markAsDirty();
+                        }
+                    }
+                });
             }
         }
     }
@@ -141,7 +162,12 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
         this.filteredOptions$ = merge(inputChanges$, this.searchTrigger$).pipe(
             takeUntil(this.destroy$),
             filter(() => !this.autocompleteControl.disabled),
-            debounceTime(environment.AUTOCOMPLETE_WAITING_TIME ?? 300),
+            debounce(value => {
+                const term = typeof value === 'string' ? value : '';
+                const wait = (term === '') ? 0 : (environment.AUTOCOMPLETE_WAITING_TIME ?? 300);
+                return timer(wait);
+            }),
+
             switchMap(value => {
                 if (typeof value === 'object' && value !== null) {
                     return of([]);
@@ -246,8 +272,11 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
                 this.searchTrigger$.next(val || '');
 
                 setTimeout(() => {
-                    this.autoCompleteTrigger.openPanel();
-                });
+                    if (this.autoCompleteTrigger) {
+                        this.autoCompleteTrigger.updatePosition();
+                        this.autoCompleteTrigger.openPanel();
+                    }
+                }, 400);
             }
         }
     }
@@ -255,7 +284,32 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
     openDropdown(): void {
         if (this.autoCompleteTrigger) {
             this.autocompleteControl.setValue(this.autocompleteControl.value, { emitEvent: true });
-            this.autoCompleteTrigger.openPanel();
+            setTimeout(() => {
+                this.autoCompleteTrigger.updatePosition();
+                this.autoCompleteTrigger.openPanel();
+            }, 300);
         }
     }
+
+
+
+    clear(event: MouseEvent): void {
+        event.stopPropagation();
+        this.autocompleteControl.setValue('', { emitEvent: true });
+        this.onChange(null);
+        this.updateSiblingField(null);
+        this.onTouched();
+
+        if (this.inputElement) {
+            this.inputElement.nativeElement.focus();
+        }
+
+        if (this.autoCompleteTrigger) {
+            this.autoCompleteTrigger.openPanel();
+        }
+        this.searchTrigger$.next('');
+        this.cdr.markForCheck();
+    }
 }
+
+

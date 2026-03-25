@@ -1,9 +1,10 @@
-﻿import { Component, Inject, ViewChild, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Inject, ViewChild, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Injector } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+
 
 import { AbstractFormComponent } from '../../abstract-form.component';
 import { DynamicField } from '../../../model/dynamic-form/dynamic-field';
@@ -16,9 +17,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { A11yModule } from '@angular/cdk/a11y';
+import { DialogService } from '../../../services/dialog-service/dialog.service';
+import { FuseLoadingService } from '@fuse/services/loading/loading.service';
+import { finalize, Observable, of } from 'rxjs';
 import { TranslatePipe } from '../../../pipe/translate.pipe';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HTTP_METHODS } from '@fwk/model/ws-def';
+import { LocalStorageService } from '../../../services/local-storage/local-storage.service';
 
 @Component({
     selector: 'fwk-basic-modal-component',
@@ -52,6 +57,10 @@ export class BasicModalComponent extends AbstractFormComponent implements OnInit
     notShowButton: boolean;
     formDef: FormDef | undefined;
     _submitting: boolean = false;
+    loading$: Observable<boolean>;
+    router: Router;
+    localStorageService: LocalStorageService;
+
     currentUrl: string = '';
 
     private flattenObject(ob: any, prefix = ''): any {
@@ -87,6 +96,10 @@ export class BasicModalComponent extends AbstractFormComponent implements OnInit
     ) {
         super(injector);
         this.dialogRef.disableClose = true;
+
+        this.router = injector.get(Router);
+        this.loading$ = injector.get(FuseLoadingService).show$;
+        this.localStorageService = injector.get(LocalStorageService);
 
         this.config = this.data.config || {};
         this.entity = this.flattenObject(this.data.entity || {});

@@ -1,5 +1,7 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
+import { FormService } from '../dynamic-form/form.service';
+
 import { FormDef } from '../../model/form-def';
 import { I18n } from '../../model/i18n';
 import { BasicModalComponent } from '../../components/crud/basic-modal/basic-modal.component';
@@ -21,8 +23,12 @@ interface FilePreviewData {
 export class DialogService {
 
     constructor(
-        private dialog: MatDialog
-    ) {}
+        private dialog: MatDialog,
+        private formService: FormService
+    ) {
+        this.formService.showModalRequest.subscribe(data => this.showQuestionModal(data));
+    }
+
 
     openHtmlModal<T = any>(data: any, dialogConfig?: MatDialogConfig): MatDialogRef<HtmlModalComponent, T> {
         const config: MatDialogConfig = {

@@ -1,16 +1,16 @@
-﻿<div class="flex flex-col max-h-screen crud-modal" [ngClass]="[getFuncName() + '-modal', getUrl() + '-modal']">
+<div class="flex flex-col max-h-screen crud-modal" [ngClass]="[getFuncName() + '-modal', getUrl() + '-modal']">
 
-    <mat-progress-bar *ngIf="submitting" mode="indeterminate"></mat-progress-bar>
-
-    <div class="flex flex-0 items-center justify-between pl-6 pr-4 h-16">
+    <div class="flex flex-0 items-center justify-between pl-6 pr-4 h-16 relative">
         <h2 class="text-2xl font-semibold">{{ titleLabel }}</h2>
         <button mat-icon-button (click)="onNoClick()" [disabled]="submitting"
             [matTooltip]="'modal_button_close' | translate">
             <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
         </button>
+
+        <mat-progress-bar *ngIf="(loading$ | async) || submitting" mode="indeterminate" class="absolute bottom-0 left-0 w-full z-50"></mat-progress-bar>
     </div>
 
-    <div mat-dialog-content class="flex-auto overflow-y-auto p-6  border-t border-gray-200 dark:border-gray-700">
+    <div mat-dialog-content class="flex-auto overflow-y-auto p-6 border-t border-gray-200 dark:border-gray-700 relative">
         <fwk-dynamic-form-component cdkFocusInitial #dynamicForm [entity]="entity" [isEdit]="isEdit" [fields]="fields"
             [handlerFieldSourceData]="handlerFieldSourceData" [parentForm]="form"
             (objectModified)="objectModified($event)" (onFieldsChanges)="fieldsChanges(fields, $event)"

@@ -1,7 +1,7 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { FormControl, FormGroup, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Observable } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Observable, Subject, asyncScheduler } from 'rxjs';
+import { debounceTime, distinctUntilChanged, throttleTime, share } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 
 import { DynamicField, CONTROL_TYPE, HIDDEN } from '../../model/dynamic-form/dynamic-field';
@@ -50,6 +50,12 @@ export interface FieldControlApi {
   providedIn: 'root'
 })
 export class FormService {
+  private _showModalRequest = new Subject<any>();
+  public showModalRequest = this._showModalRequest.pipe(
+    throttleTime(2000, asyncScheduler, { leading: true, trailing: false }),
+    share()
+  );
+  
   editorTemplates: any[] = [];
   i18n?: I18n;
 
@@ -282,7 +288,10 @@ export class FormService {
     const control = form.get(field.key);
     if (!control) return;
 
-    control.valueChanges.subscribe(() => {
+    control.valueChanges.pipe(
+      debounceTime(100),
+      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
+    ).subscribe(() => {
       const data = {
         fieldKey: field.key,
         entity: this.injectToEntity({}, form, allFields),
@@ -464,6 +473,65 @@ export class FormService {
           fieldControl?.updateByDef(fieldDef);
           if (fieldDef.showErrorMsg) {
             this.addErrorToFields(form, { [fieldDef.key]: fieldDef.showErrorMsg });
+          }
+          if ((fieldDef as any).showModal) {
+            const modalData = (fieldDef as any).showModal;
+            const message = typeof modalData === 'string' ? modalData : modalData.message;
+            this._showModalRequest.next({
+              title: typeof modalData === 'object' && modalData.title ? modalData.title : 'Aviso',
+              message: message,
+              onSubmit: () => { },
+              actions: {
+                confirm: {
+                  label: typeof modalData === 'object' && modalData.buttonLabel ? modalData.buttonLabel : 'Entendido'
+                },
+                cancel: { show: false }
+              }
+            });
+          }
+
+          if ((fieldDef as any).validationWs) {
+            const validationDef = (fieldDef as any).validationWs;
+            const control = form.get(fieldDef.key);
+            let value = control?.value;
+            if (value && validationDef.valueProperty) {
+              value = value[validationDef.valueProperty];
+            }
+            if (value) {
+              this.genericHttpService.basicGet(validationDef.url, { valueToValidate: value }, null, { [validationDef.param]: 'valueToValidate' }).subscribe(res => {
+                let isValid = res === true || res?.valid === true || res?.data === true;
+                if (res && typeof res === 'object') {
+                  if (res.status === 'OK' && res.data !== undefined) {
+                    isValid = res.data === true || res.data === 'true';
+                  } else if (res.success !== undefined) {
+                    isValid = res.success === true;
+                  }
+                }
+
+                if (!isValid) {
+                  const errorMsg = validationDef.errorMessageKey ? this.translate(validationDef.errorMessageKey) : validationDef.errorMessage;
+                  this.addErrorToFields(form, { [fieldDef.key]: errorMsg || 'Validation failed' });
+
+                  if (validationDef.showModalOnFail) {
+                    this._showModalRequest.next({
+                      title: 'Aviso',
+                      message: errorMsg || 'La validación ha fallado.',
+                      onSubmit: () => { },
+                      actions: {
+                        confirm: { label: 'Entendido' },
+                        cancel: { show: false }
+                      }
+                    });
+                  }
+                }
+                if (validationDef.assignResultToField) {
+                  const targetControl = form.get(validationDef.assignResultToField);
+                  if (targetControl) {
+                    targetControl.setValue(isValid, { emitEvent: true });
+                  }
+                }
+              });
+            }
           }
         });
       });

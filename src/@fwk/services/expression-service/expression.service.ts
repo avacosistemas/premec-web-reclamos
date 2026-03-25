@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { DynamicFieldConditionIf } from '../../model/dynamic-form/dynamic-field-condition-if';
 import { FILTER_TYPE } from '../filter-service/filter.service';
 

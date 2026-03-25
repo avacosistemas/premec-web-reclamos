@@ -1,4 +1,4 @@
-﻿<mat-form-field class="w-full" appearance="outline">
+<mat-form-field class="w-full" appearance="outline">
     <mat-label>{{ config?.label }}</mat-label>
 
     <input
@@ -12,6 +12,10 @@
         (blur)="onTouched()"
         (focus)="onInputFocus()"
         (click)="triggerSearch()">
+
+    <button type="button" mat-icon-button matSuffix (click)="clear($event)" *ngIf="autocompleteControl.value && !autocompleteControl.disabled">
+        <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+    </button>
 
     <button
         mat-icon-button

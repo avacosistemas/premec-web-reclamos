@@ -2,36 +2,36 @@ import { DynamicField, TEXTBOX, TEXTAREA, FILE } from "@fwk/model/dynamic-form/d
 
 export const RECLAMOS_READ_FORM_FIELDS_DEF: DynamicField<any>[] = [
     {
-        key: 'numero',
-        labelKey: 'cl_numero',
+        key: 'serviceCallID',
+        labelKey: 'fl_numero',
         controlType: TEXTBOX,
         disabled: true,
         colSpan: 2
     },
     {
-        key: 'estado',
+        key: 'estadoReclamo',
         labelKey: 'cl_estado',
         controlType: TEXTBOX,
         disabled: true,
         colSpan: 2
     },
     {
-        key: 'maquina',
-        labelKey: 'cl_maquina',
+        key: 'internalSN',
+        labelKey: 'f_maquina',
         controlType: TEXTBOX,
         disabled: true,
         colSpan: 4
     },
     {
         key: 'asunto',
-        labelKey: 'cl_asunto',
+        labelKey: 'f_asunto',
         controlType: TEXTBOX,
         disabled: true,
         colSpan: 4
     },
     {
-        key: 'detalle',
-        labelKey: 'cl_detalle',
+        key: 'descripcion',
+        labelKey: 'f_detalle',
         controlType: TEXTAREA,
         disabled: true,
         colSpan: 4

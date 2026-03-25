@@ -1,14 +1,22 @@
-﻿import { Component, OnInit, Input, forwardRef, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Input, forwardRef, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+
+
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, Validator, FormControl, AbstractControl, ValidationErrors, NG_VALIDATORS, ReactiveFormsModule, FormGroupDirective, NgForm } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+
 import { MatOptionModule, ErrorStateMatcher } from '@angular/material/core';
-import { Subject, Observable, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, takeUntil } from "rxjs/operators";
+import { Subject, Observable, of, timer } from 'rxjs';
+
+import { debounceTime, distinctUntilChanged, switchMap, takeUntil, debounce } from "rxjs/operators";
+
 import { AutocompleteConfiguration, AutocompleteSearchTerm } from './autocomplete.interface';
 import { TranslatePipe } from '../../pipe/translate.pipe';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+
 
 @Component({
     selector: 'fwk-autocomplete',
@@ -23,7 +31,10 @@ import { TranslatePipe } from '../../pipe/translate.pipe';
         MatAutocompleteModule,
         MatOptionModule,
         TranslatePipe,
+        MatButtonModule,
+        MatIconModule,
     ],
+
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -43,7 +54,12 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     @Input() searchTermInterface!: AutocompleteSearchTerm;
     @Input() errorMessage: string | null = null;
 
+    @ViewChild(MatAutocompleteTrigger) autocompleteTrigger!: MatAutocompleteTrigger;
+    @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
+
+
     autocompleteControl = new FormControl<string | object | null>(null);
+
     filteredOptions$: Observable<any[]> = of([]);
 
     matcher = new class implements ErrorStateMatcher {
@@ -89,7 +105,11 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
 
     private setupFiltering(): void {
         const valueChanges$ = this.autocompleteControl.valueChanges.pipe(
-            debounceTime(500),
+            debounce(value => {
+                const term = typeof value === 'string' ? value : '';
+                const wait = (term === '') ? 0 : 300;
+                return timer(wait);
+            }),
             distinctUntilChanged()
         );
 
@@ -169,5 +189,24 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     onOptionSelected(): void {
         this.isOptionSelected = true;
         this.onTouched();
+    }
+
+    clear(event: MouseEvent): void {
+        event.stopPropagation();
+        this.autocompleteControl.setValue('', { emitEvent: true });
+        this.onChange(null);
+        this.onTouched();
+
+        if (this.inputElement) {
+            this.inputElement.nativeElement.focus();
+        }
+
+        if (this.autocompleteTrigger) {
+            setTimeout(() => {
+                this.autocompleteTrigger.updatePosition();
+                this.autocompleteTrigger.openPanel();
+            }, 300);
+        }
+        this.cdr.markForCheck();
     }
 }

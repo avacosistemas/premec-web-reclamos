@@ -1,4 +1,4 @@
-﻿import { Component, Inject, ViewChild, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { Component, Inject, ViewChild, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -21,7 +21,9 @@ import { FormDef } from '../../../model/form-def';
 import { ActionDef } from '../../../model/component-def/action-def';
 import { ActionDefService } from '../../../services/action-def-service/action-def.service';
 import { DialogService } from '../../../services/dialog-service/dialog.service';
-import { of, finalize } from 'rxjs';
+import { FuseLoadingService } from '@fuse/services/loading/loading.service';
+import { of, finalize, Observable } from 'rxjs';
+
 import { A11yModule } from '@angular/cdk/a11y';
 import { TranslatePipe } from '../../../pipe/translate.pipe';
 import { LocalStorageService } from '../../../services/local-storage/local-storage.service';
@@ -61,6 +63,8 @@ export class CrudModalComponent extends AbstractComponent implements OnInit, Aft
   handlerFieldSourceData: any;
   _fields: DynamicField<any>[] = [];
   _isEdit: boolean = false;
+  loading$: Observable<boolean>;
+
 
   private fieldsBehavior: DynamicFieldBehavior[] | undefined;
   private customSubmitActions: ((action: ActionDef, entity: any) => void) | undefined;
@@ -85,7 +89,9 @@ export class CrudModalComponent extends AbstractComponent implements OnInit, Aft
     this.activatedRoute = injector.get(ActivatedRoute);
     this.actionDefService = injector.get(ActionDefService);
     this.dialogService = injector.get(DialogService);
+    this.loading$ = injector.get(FuseLoadingService).show$;
     this.i18nName = this.data.i18n?.name || 'fwk';
+
     this.dialogRef.disableClose = true;
     this.entity = this.localStorageService.clone(this.data.entity || {});
     this.formDef = this.data.formDef;

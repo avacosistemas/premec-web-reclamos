@@ -1,20 +1,65 @@
-import { DynamicField, AUTOCOMPLETE, AUTOCOMPLETE_DESPLEGABLE, SELECT, TEXTBOX, TEXTAREA, FILE } from "@fwk/model/dynamic-form/dynamic-field";
-import { DynamicFieldBehavior } from "@fwk/model/dynamic-form/dynamic-field-behavior";
-import { CONDITION_COMPARE } from "@fwk/model/dynamic-form/dynamic-field-condition-if";
+import { DynamicField, AUTOCOMPLETE, AUTOCOMPLETE_DESPLEGABLE, SELECT, TEXTBOX, TEXTAREA, FILE, RADIO_BUTTON } from "@fwk/model/dynamic-form/dynamic-field";
 import { PREFIX_DOMAIN_API } from "environments/environment";
 
 export const RECLAMOS_CREATE_FORM_FIELDS_DEF: DynamicField<any>[] = [
     {
+        key: 'maquina_tipo',
+        controlType: 'hidden',
+        colSpan: 0
+    },
+    {
+        key: 'maquina_valida',
+        controlType: 'hidden',
+        colSpan: 0
+    },
+    {
+        key: 'idTipoProblema',
+        controlType: 'hidden',
+        colSpan: 0
+    },
+    {
+        key: 'idProblema',
+        controlType: 'hidden',
+        colSpan: 0
+    },
+    {
+        key: 'equipmentCardNum',
+        controlType: 'hidden',
+        colSpan: 0
+    },
+    {
+        key: 'internalSerialNum',
+        controlType: 'hidden',
+        colSpan: 0
+    },
+    {
+        key: 'itemCode',
+        controlType: 'hidden',
+        colSpan: 0
+    },
+    {
+        key: 'manufacturerSerialNum',
+        controlType: 'hidden',
+        colSpan: 0
+    },
+    {
         key: 'maquina',
         labelKey: 'f_maquina',
-        controlType: AUTOCOMPLETE,
+        controlType: AUTOCOMPLETE_DESPLEGABLE,
         options: {
             fromWs: {
                 key: 'customer_equipment',
                 url: PREFIX_DOMAIN_API + 'customer/equipment'
             },
             elementLabel: 'label',
-            elementValue: 'internalSerialNum',
+            elementValue: 'tipo',
+            transferIdToField: 'maquina_tipo',
+            transferMap: {
+                equipmentCardNum: 'EquipmentCardNum',
+                internalSerialNum: 'InternalSerialNum',
+                itemCode: 'ItemCode',
+                manufacturerSerialNum: 'ManufacturerSerialNum'
+            },
             minTermLength: 1,
             searchOnFocus: true
         },
@@ -24,14 +69,18 @@ export const RECLAMOS_CREATE_FORM_FIELDS_DEF: DynamicField<any>[] = [
     {
         key: 'tipo',
         labelKey: 'f_tipo',
-        controlType: SELECT,
+        controlType: AUTOCOMPLETE_DESPLEGABLE,
         options: {
-            fromWs: {
-                key: 'tipo_problema',
-                url: PREFIX_DOMAIN_API + 'tipoProblemaMaquina'
-            },
             elementLabel: 'nombre',
             elementValue: 'id',
+            transferIdToField: 'idTipoProblema',
+            searchOnFocus: true
+        },
+        apiOptions: {
+            url: PREFIX_DOMAIN_API + 'tipoProblemaMaquina',
+            queryString: {
+                tipo: 'maquina_tipo'
+            }
         },
         required: true,
         colSpan: 2,
@@ -44,13 +93,14 @@ export const RECLAMOS_CREATE_FORM_FIELDS_DEF: DynamicField<any>[] = [
         options: {
             elementLabel: 'nombre',
             elementValue: 'id',
+            transferIdToField: 'idProblema',
             useNativeFilter: false,
             searchOnFocus: true,
         },
         apiOptions: {
             url: PREFIX_DOMAIN_API + 'problemaMaquina',
             queryString: {
-                id: 'tipo',
+                id: 'idTipoProblema',
                 nombre: 'subtipo'
             }
         },
@@ -66,9 +116,27 @@ export const RECLAMOS_CREATE_FORM_FIELDS_DEF: DynamicField<any>[] = [
         colSpan: 4
     },
     {
-        key: 'detalle',
+        key: 'descripcion',
         labelKey: 'f_detalle',
         controlType: TEXTAREA,
+        required: true,
+        colSpan: 4
+    },
+    {
+        key: 'feedback_prioridad',
+        controlType: 'hidden',
+        colSpan: 4
+    },
+    {
+        key: 'prioridad',
+        labelKey: 'f_prioridad',
+        controlType: RADIO_BUTTON,
+        options: {
+            options: [
+                { label: 'Funciona', value: 'scp_Low' },
+                { label: 'No Funciona', value: 'scp_High' }
+            ]
+        },
         required: true,
         colSpan: 4
     },
@@ -79,35 +147,9 @@ export const RECLAMOS_CREATE_FORM_FIELDS_DEF: DynamicField<any>[] = [
         options: {
             acceptTypes: 'image/*',
             multiple: true,
-            maxFiles: 3
+            maxFiles: 3,
+            outputFormat: 'object'
         },
         colSpan: 4
-    }
-];
-
-export const RECLAMOS_CREATE_BEHAVIOR_DEF: DynamicFieldBehavior[] = [
-    {
-        fieldKey: 'maquina',
-        condition: {
-            if: [{ key: 'maquina', compare: CONDITION_COMPARE.HAS_VALUE }],
-            then: [
-                { key: 'tipo', disabled: false } as any
-            ],
-            else: [
-                { key: 'tipo', disabled: true, value: null } as any
-            ]
-        }
-    },
-    {
-        fieldKey: 'tipo',
-        condition: {
-            if: [{ key: 'tipo', compare: CONDITION_COMPARE.HAS_VALUE }],
-            then: [
-                { key: 'subtipo', disabled: false, value: null } as any
-            ],
-            else: [
-                { key: 'subtipo', disabled: true, value: null } as any
-            ]
-        }
     }
 ];

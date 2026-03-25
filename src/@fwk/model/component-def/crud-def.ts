@@ -1,4 +1,4 @@
-﻿import { ComponentDef } from './component-def';
+import { ComponentDef } from './component-def';
 import { FormsCrudDef } from './form-crud-def';
 import { GridDef } from './grid-def';
 import { ActionDef } from './action-def';

@@ -1,6 +1,4 @@
-﻿<div class="flex flex-col max-h-screen" [ngClass]="[data.modalKey + '-modal', currentUrl + '-modal']">
-
-    <mat-progress-bar *ngIf="_submitting" mode="indeterminate"></mat-progress-bar>
+<div class="flex flex-col max-h-screen relative" [ngClass]="[data.modalKey + '-modal', currentUrl + '-modal']">
 
     <div class="flex flex-0 items-center justify-between pl-6 pr-4 h-16">
         <h2 class="text-2xl font-semibold">{{ titleLabel }}</h2>
@@ -10,7 +8,8 @@
         </button>
     </div>
 
-    <div mat-dialog-content class="flex flex-col min-h-0 p-6 pb-6 border-t border-gray-200 dark:border-gray-600">
+    <div mat-dialog-content class="flex flex-col min-h-0 p-6 pb-6 border-t border-gray-200 dark:border-gray-600 relative">
+        <mat-progress-bar *ngIf="(loading$ | async) || _submitting" mode="indeterminate" class="absolute top-0 left-0 w-full z-50"></mat-progress-bar>
         <fwk-dynamic-form-component #dynamicForm [entity]="entity" [isEdit]="isEdit()" [fields]="fields"
             [subFormName]="formKey" [parentForm]="form" (onChangeEntity)="onChangeEntity($event)">
         </fwk-dynamic-form-component>
