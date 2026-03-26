@@ -148,9 +148,16 @@ export class BasicModalComponent extends AbstractFormComponent implements OnInit
     }
 
     onSubmitNoClose(): void {
+        const formWithControls = this.form.get(this.formKey) as FormGroup;
+        if (!formWithControls) return;
+
+        const currentFormValues = this.formService.injectToEntity({}, formWithControls, this.fields);
+
         this.callSubmit((result: any) => {
             if (this.dynamicForm) {
-                if (result && typeof result === 'object' && (result.id || result.Guid)) {
+                this.entity = { ...this.entity, ...currentFormValues };
+
+                if (result && typeof result === 'object' && (result.id || result.Guid || result.id !== undefined)) {
                     this.entity = { ...this.entity, ...result };
                 }
 

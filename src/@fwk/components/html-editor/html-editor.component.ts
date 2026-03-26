@@ -1,7 +1,9 @@
-import { Component, forwardRef, ChangeDetectorRef, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, forwardRef, ChangeDetectorRef, Input, OnInit, OnDestroy, ViewChild, ElementRef, NgZone, Optional, Self } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NG_VALUE_ACCESSOR, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, FormsModule, ReactiveFormsModule, NgControl } from '@angular/forms';
+import { Observable, of } from 'rxjs';
 import { DynamicFieldFormComponent } from '../dynamic-form/dynamic-field-form/dynamic-field-form.component';
+import { FormService } from '../../services/dynamic-form/form.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -46,7 +48,10 @@ export class HtmlEditorComponent extends DynamicFieldFormComponent<string> imple
         base_url: '/tinymce',
         suffix: '.min',
         height: 500,
-        menubar: true,
+        menubar: 'file edit view insert format tools table help',
+        menu: {
+            insert: { title: 'Insertar', items: 'image link media codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor | insertdatetime | insert_template' }
+        },
         branding: false,
         promotion: false,
         autosave_ask_before_unload: true,
@@ -70,21 +75,62 @@ export class HtmlEditorComponent extends DynamicFieldFormComponent<string> imple
             'nonbreaking', 'anchor', 'insertdatetime', 'advlist', 'lists', 'wordcount',
             'help', 'charmap', 'quickbars', 'emoticons', 'accordion', 'visualchars'
         ],
-        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen  preview save print | insertfile image media link anchor codesample accordion | ltr rtl',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen  preview save print insert_template | insertfile image media link anchor codesample accordion | ltr rtl',
+        save_onsavecallback: () => {
+            const content = this.editor.getContent();
+            this._value = content;
+            this.onChange(content);
+            this.onTouch();
+        },
         setup: (editor: any) => {
             this.editor = editor;
-            editor.on('Change KeyUp Undo Redo', () => {
-                const content = editor.getContent();
-                this._value = content;
-                this.onChange(content);
-                this.onTouch();
+
+            editor.ui.registry.addButton('insert_template', {
+                tooltip: 'Insertar Plantilla',
+                icon: 'template',
+                onAction: () => this.openTemplateDialog(editor)
+            });
+
+            editor.ui.registry.addMenuItem('insert_template', {
+                text: 'Plantilla',
+                icon: 'template',
+                onAction: () => this.openTemplateDialog(editor)
+            });
+
+            editor.on('init', () => {
+                if (this._value) {
+                    editor.setContent(this._value);
+                }
+                if (this.isDisabled) {
+                    editor.mode.set('readonly');
+                }
+                
+                editor.on('Change KeyUp Undo Redo input ExecCommand SetContent NodeChange', () => {
+                    this.ngZone.run(() => {
+                        const content = editor.getContent();
+                        if (content === '' && this._value && this._value !== '') {
+                             return;
+                        }
+                        
+                        if (this._value !== content) {
+                            this._value = content;
+                            this.onChange(content);
+                            this.onTouch();
+                            this.cdr.detectChanges();
+                        }
+                    });
+                });
+                
+                this.cdr.detectChanges();
             });
         }
     };
 
     constructor(
         private cdr: ChangeDetectorRef,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private formService: FormService,
+        private ngZone: NgZone
     ) {
         super();
     }
@@ -112,12 +158,76 @@ export class HtmlEditorComponent extends DynamicFieldFormComponent<string> imple
             Object.assign(finalConfig, this.field.options['init']);
         }
 
-        tinymce.init(finalConfig).then((editors: any[]) => {
-            if (this._value) {
-                editors[0].setContent(this._value);
+        const templates$ = this.formService.editorTemplates?.length > 0
+            ? of(this.formService.editorTemplates)
+            : this.formService.setEditorTemplates();
+
+        templates$.subscribe({
+            next: (templates) => {
+                if (templates?.length > 0) {
+                    finalConfig.templates = templates.map((t: any) => ({
+                        title: t.name || t.title,
+                        description: t.description || '',
+                        content: t.content || t.html
+                    }));
+                }
+                this.initializeTinyMce(finalConfig);
+            },
+            error: () => {
+                this.initializeTinyMce(finalConfig);
             }
-            if (this.isDisabled) {
-                editors[0].mode.set('readonly');
+        });
+    }
+
+    private initializeTinyMce(config: any): void {
+        tinymce.init(config);
+    }
+
+    private openTemplateDialog(editor: any): void {
+        if (!this.formService.editorTemplates || this.formService.editorTemplates.length === 0) {
+            editor.notificationManager.open({
+                text: 'No hay plantillas cargadas todavía.',
+                type: 'info',
+                timeout: 3000
+            });
+            return;
+        }
+
+        const templateItems = this.formService.editorTemplates.map((t: any) => ({
+            text: t.name || t.title,
+            value: t.content || t.html
+        }));
+
+        editor.windowManager.open({
+            title: 'Insertar Plantilla',
+            body: {
+                type: 'panel',
+                items: [
+                    {
+                        type: 'selectbox',
+                        name: 'templateContent',
+                        label: 'Seleccionar una plantilla para insertar',
+                        items: templateItems
+                    }
+                ]
+            },
+            buttons: [
+                {
+                    type: 'cancel',
+                    text: 'Cerrar'
+                },
+                {
+                    type: 'submit',
+                    text: 'Insertar',
+                    primary: true
+                }
+            ],
+            onSubmit: (api: any) => {
+                const data = api.getData();
+                if (data.templateContent) {
+                    editor.insertContent(data.templateContent);
+                }
+                api.close();
             }
         });
     }

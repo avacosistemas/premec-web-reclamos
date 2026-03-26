@@ -1,4 +1,4 @@
-﻿import { OnInit, Component, Injector, Input, Output, EventEmitter, ViewChild, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, forwardRef, OnChanges, SimpleChanges } from '@angular/core';
+import { OnInit, Component, Injector, Input, Output, EventEmitter, ViewChild, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, forwardRef, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule, I18nPluralPipe } from '@angular/common';
 import { FormGroup, FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -177,9 +177,21 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
     this.generalFields = this.getGeneralFields(this.cacheFields);
     this.fieldsOptions = this.cacheFields.filter(f => !f.options?.baseFilter);
 
+    this.fieldsOptions.forEach(field => {
+        if (field.colSpan === undefined || field.colSpan === null) {
+            field.colSpan = 1;
+        }
+    });
+
     this.visibleGeneralFields = this.generalFields.filter(field =>
       field.controlType !== 'hidden' && !field.options?.hidden
     );
+
+    this.visibleGeneralFields.forEach(field => {
+      if (field.colSpan === undefined || field.colSpan === null) {
+        field.colSpan = 1;
+      }
+    });
 
     this.hasVisibleFields = this.visibleGeneralFields.length > 0;
 

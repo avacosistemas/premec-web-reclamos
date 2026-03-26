@@ -96,7 +96,11 @@
 
             <mat-form-field *ngSwitchCase="'textarea'" class="w-full" appearance="outline">
                 <mat-label>{{ field.label }}</mat-label>
-                <textarea matInput [formControlName]="field.key" [id]="field.key" cdkTextareaAutosize
+                <textarea matInput [formControlName]="field.key" [id]="field.key" 
+                    [rows]="field.options?.rows || 3"
+                    [cdkTextareaAutosize]="field.options?.autosize || false"
+                    [cdkAutosizeMinRows]="field.options?.minRows || 3"
+                    style="resize: vertical;"
                     [cdkFocusInitial]="i === firstFocusableFieldIndex"></textarea>
                 <mat-error *ngIf="form.get(field.key)?.invalid">{{ getMessageErrorValidation(field) }}</mat-error>
             </mat-form-field>

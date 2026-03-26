@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, ViewChild, Output, EventEmitter, Injector, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, Output, EventEmitter, Injector, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -8,6 +8,8 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Params, RouterModule } from '@angular/router';
+import { of } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
@@ -345,33 +347,55 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
                     }
                 });
         } else if (action.form || action.formDef) {
-            const actionClone = this.localStorageService.clone(action);
-            const dictionaryName = this.crud.crudDef?.i18n?.name;
-            const i18n = dictionaryName ? this.i18nService.getDictionary(dictionaryName) : undefined;
+            const idKey = this.grid.columnsDef.find(c => c.id)?.columnDef || 'id';
+            const recordId = entity[idKey] || entity.id;
 
-            if (actionClone.formDef) {
-                this.formService.setUpFormDef(i18n, actionClone.formDef);
-            }
-            if (actionClone.form) {
-                this.formService.setUpFieldTextFromI18n(i18n, actionClone.form);
-            }
+            this.spinnerGeneralControl.show();
+            const fetch$ = (recordId && this.crud?.service && typeof this.crud.service.getById === 'function')
+                ? this.crud.service.getById(recordId)
+                : of(entity);
 
-            const data = {
-                entity: entity,
-                config: actionClone,
-                formDef: actionClone.formDef,
-                fields: actionClone.form || actionClone.formDef?.fields,
-                i18n: this.crud.i18nCurrentCrudComponent,
-            };
+            fetch$.pipe(
+                finalize(() => {
+                    this.spinnerGeneralControl.hide();
+                    this._cdr.markForCheck();
+                })
+            ).subscribe({
+                next: (fullEntity) => {
+                    const entityToUse = fullEntity || entity;
+                    if (recordId) { entityToUse.id = recordId; }
 
+                    const actionClone = this.localStorageService.clone(action);
+                    const dictionaryName = this.crud.crudDef?.i18n?.name;
+                    const i18n = dictionaryName ? this.i18nService.getDictionary(dictionaryName) : undefined;
 
-            const dialogRef = this.injector.get(MatDialog).open(BasicModalComponent, {
-                width: this.crud.crudDef.dialogConfig?.width || '320px',
-                maxWidth: '95vw',
-                panelClass: 'control-mat-dialog',
-                data: data
+                    if (actionClone.formDef) {
+                        this.formService.setUpFormDef(i18n, actionClone.formDef);
+                    }
+                    if (actionClone.form) {
+                        this.formService.setUpFieldTextFromI18n(i18n, actionClone.form);
+                    }
+
+                    const data = {
+                        entity: entityToUse,
+                        config: actionClone,
+                        formDef: actionClone.formDef,
+                        fields: actionClone.form || actionClone.formDef?.fields,
+                        i18n: this.crud.i18nCurrentCrudComponent,
+                    };
+
+                    const dialogRef = this.injector.get(MatDialog).open(BasicModalComponent, {
+                        width: this.crud.crudDef.dialogConfig?.width || '320px',
+                        maxWidth: '95vw',
+                        panelClass: 'control-mat-dialog',
+                        data: data
+                    });
+                    dialogRef.afterClosed().subscribe(() => this.crud.findAll());
+                },
+                error: () => {
+                    this.openBasicModal(action, entity);
+                }
             });
-            dialogRef.afterClosed().subscribe(() => this.crud.findAll());
         } else {
             if (ACTION_TYPES.file_download === action.actionType) {
                 this.spinnerGeneralControl.show();
@@ -593,5 +617,34 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
         if (alignment) classes.push(`text-${alignment}`);
 
         return classes.join(' ').trim();
+    }
+
+    private openBasicModal(action: ActionDef, entity: any): void {
+        const actionClone = this.localStorageService.clone(action);
+        const dictionaryName = this.crud.crudDef?.i18n?.name;
+        const i18n = dictionaryName ? this.i18nService.getDictionary(dictionaryName) : undefined;
+
+        if (actionClone.formDef) {
+            this.formService.setUpFormDef(i18n, actionClone.formDef);
+        }
+        if (actionClone.form) {
+            this.formService.setUpFieldTextFromI18n(i18n, actionClone.form);
+        }
+
+        const data = {
+            entity: entity,
+            config: actionClone,
+            formDef: actionClone.formDef,
+            fields: actionClone.form || actionClone.formDef?.fields,
+            i18n: this.crud.i18nCurrentCrudComponent,
+        };
+
+        const dialogRef = this.injector.get(MatDialog).open(BasicModalComponent, {
+            width: this.crud.crudDef.dialogConfig?.width || '320px',
+            maxWidth: '95vw',
+            panelClass: 'control-mat-dialog',
+            data: data
+        });
+        dialogRef.afterClosed().subscribe(() => this.crud.findAll());
     }
 }

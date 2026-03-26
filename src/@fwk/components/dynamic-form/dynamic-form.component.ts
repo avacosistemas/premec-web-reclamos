@@ -158,8 +158,7 @@ export class DynamicFormComponent extends AbstractComponent implements OnInit, O
 
         this.formValueChangesSub = this.form.valueChanges
             .pipe(
-                debounceTime(300),
-                distinctUntilChanged()
+                debounceTime(100)
             )
             .subscribe(() => {
                 this.checkObjectModified();
@@ -228,6 +227,7 @@ export class DynamicFormComponent extends AbstractComponent implements OnInit, O
         const currentValues = this.form.getRawValue();
         const isModified = JSON.stringify(this.initStateObject) !== JSON.stringify(currentValues);
         this.objectModified.emit(isModified);
+        this.cdRef.markForCheck();
     }
 
     getRestrictionKeys(field: DynamicField<any>): string {

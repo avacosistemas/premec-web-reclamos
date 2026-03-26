@@ -35,12 +35,12 @@
 
             <ng-container *ngIf="isEdit">
                 <button *ngIf="formDef?.showSubmitContinue" class="ml-2" mat-flat-button color="accent"
-                    (click)="onSubmit(true)" [disabled]="!isObjectModified || form.invalid || submitting">
+                    (click)="onSubmit(true)" [disabled]="(form.pristine && !isObjectModified) || form.invalid || submitting">
                     {{ 'modal_button_save_and_continue' | translate }}
                 </button>
-
+ 
                 <button class="ml-2" mat-flat-button color="accent" (click)="onSubmit()"
-                    [disabled]="!isObjectModified || form.invalid || submitting">
+                    [disabled]="(form.pristine && !isObjectModified) || form.invalid || submitting">
                     {{ 'modal_button_save' | translate }}
                 </button>
             </ng-container>

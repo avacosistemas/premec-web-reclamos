@@ -65,9 +65,16 @@ export class CustomDatePickerComponent extends DynamicFieldFormComponent<string>
             return { required: true };
         }
         if (control.value) {
-            const dateFormat = this.getDateFormat();
-            if (!isValid(parse(control.value, dateFormat, new Date()))) {
-                return { invalidDate: `El formato debe ser ${dateFormat}` };
+            const formats = this.getPossibleFormats();
+            let isValidDate = false;
+            for (const fmt of formats) {
+                if (isValid(parse(control.value, fmt, new Date()))) {
+                    isValidDate = true;
+                    break;
+                }
+            }
+            if (!isValidDate) {
+                return { invalidDate: `El formato debe ser ${formats[0]}` };
             }
         }
         return null;
@@ -79,7 +86,22 @@ export class CustomDatePickerComponent extends DynamicFieldFormComponent<string>
 
     private getDateFormat(): string {
         return this.datepickerOptions?.format ??
-            (this.datepickerOptions?.withHourAndMin ? MY_FORMATS.parse.dateInputHours : MY_FORMATS.parse.dateInput);
+            (this.datepickerOptions?.withHourAndMin ? MY_FORMATS.parse.dateInputHoursSeconds : MY_FORMATS.parse.dateInput);
+    }
+
+    private getPossibleFormats(): string[] {
+        const base = this.getDateFormat();
+        if (this.datepickerOptions?.withHourAndMin) {
+            return [
+                MY_FORMATS.parse.dateInputHoursSeconds,
+                MY_FORMATS.parse.dateInputHours,
+                MY_FORMATS.parse.dateInputIso,
+                'yyyy-MM-dd HH:mm:ss',
+                'dd/MM/yyyy HH:mm:ss',
+                'dd/MM/yyyy HH:mm'
+            ];
+        }
+        return [base, 'yyyy-MM-dd'];
     }
 
     openDateModal(): void {
@@ -92,8 +114,17 @@ export class CustomDatePickerComponent extends DynamicFieldFormComponent<string>
         };
 
         if (this._value) {
-            const parsed = parse(this._value, this.getDateFormat(), now);
-            if (isValid(parsed)) {
+            const formats = this.getPossibleFormats();
+            let parsed: Date | null = null;
+            for (const fmt of formats) {
+                const p = parse(this._value, fmt, now);
+                if (isValid(p)) {
+                    parsed = p;
+                    break;
+                }
+            }
+
+            if (parsed && isValid(parsed)) {
                 initialDate = {
                     day: getDate(parsed), month: getMonth(parsed) + 1, year: getYear(parsed),
                     hour: getHours(parsed), minute: getMinutes(parsed)
@@ -112,7 +143,8 @@ export class CustomDatePickerComponent extends DynamicFieldFormComponent<string>
 
         dialogRef.afterClosed().subscribe(result => {
             if (result instanceof Date && isValid(result)) {
-                const newValue = format(result, this.getDateFormat());
+                const formatStr = this.getDateFormat();
+                const newValue = format(result, formatStr);
                 this._value = newValue;
                 this.onChange(newValue);
                 this.onTouch();

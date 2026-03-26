@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { FormControl, FormGroup, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Observable, Subject, asyncScheduler } from 'rxjs';
-import { debounceTime, distinctUntilChanged, throttleTime, share } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, throttleTime, share, tap } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 
 import { DynamicField, CONTROL_TYPE, HIDDEN } from '../../model/dynamic-form/dynamic-field';
@@ -537,9 +537,10 @@ export class FormService {
       });
   }
 
-  setEditorTemplates(): void {
-    this.genericHttpService.basicGet(PREFIX_DOMAIN_API + 'TemplateContent', null, null, {})
-      .subscribe({ next: r => this.editorTemplates = r });
+  setEditorTemplates(): Observable<any[]> {
+    return this.genericHttpService.basicGet(PREFIX_DOMAIN_API + 'TemplateContent', null, null, {}).pipe(
+      tap(r => this.editorTemplates = r)
+    );
   }
 
   private evalCondition(condition: DynamicFieldConditionIf, fields: DynamicField<any>[], entity: any): boolean {

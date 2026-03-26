@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { AbstractControl, FormControl, ValidatorFn, Validators, ValidationErrors } from '@angular/forms';
 import { I18nService } from '../i18n-service/i18n.service';
 import { I18n } from '../../model/i18n';
@@ -9,7 +9,12 @@ import { parse, isValid, differenceInYears } from 'date-fns';
 import { DatepickerOptions } from '../../model/dynamic-form/dynamic-field-options.interface';
 
 export const MY_FORMATS = {
-  parse: { dateInput: 'dd/MM/yyyy', dateInputHours: 'dd/MM/yyyy HH:mm' },
+  parse: { 
+    dateInput: 'dd/MM/yyyy', 
+    dateInputHours: 'dd/MM/yyyy HH:mm',
+    dateInputHoursSeconds: 'dd/MM/yyyy HH:mm:ss',
+    dateInputIso: 'yyyy-MM-dd HH:mm:ss'
+  },
   display: { dateInput: 'dd/MM/yyyy', monthYearLabel: 'MMM yyyy', dateA11yLabel: 'PP', monthYearA11yLabel: 'MMMM yyyy' },
 };
 
