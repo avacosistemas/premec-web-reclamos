@@ -65,6 +65,9 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     matcher = new class implements ErrorStateMatcher {
         constructor(private component: AutocompleteComponent) { }
         isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
+            if (this.component.isFocused) {
+                return false;
+            }
             return !!(this.component.errorMessage || (control?.invalid && (control?.dirty || control?.touched)));
         }
     }(this);
@@ -72,6 +75,7 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     private destroy$ = new Subject<void>();
     private focus$ = new Subject<string | null>();
     private isOptionSelected: boolean = false;
+    isFocused: boolean = false;
 
     onChange: (value: any) => void = () => { };
     onTouched: () => void = () => { };
@@ -140,9 +144,18 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     }
 
     onFocus(): void {
+        this.isFocused = true;
+        this.cdr.markForCheck();
         const value = this.autocompleteControl.value;
         this.focus$.next(typeof value === 'string' ? value : '');
         this.onTouched();
+    }
+
+    onBlur(): void {
+        this.isFocused = false;
+        this.onTouched();
+        this.autocompleteControl.updateValueAndValidity();
+        this.cdr.markForCheck();
     }
 
     writeValue(value: any): void {
@@ -171,7 +184,7 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
             return { required: true };
         }
 
-        if (typeof value === 'string' && value.trim() !== '') {
+        if (typeof value === 'string' && value.trim() !== '' && !this.config?.options?.allowFreeText) {
             return { selectOrCleanField: true };
         }
 

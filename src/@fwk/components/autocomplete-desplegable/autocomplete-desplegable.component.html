@@ -9,7 +9,7 @@
         [matAutocomplete]="auto"
         [required]="config?.required"
         [errorStateMatcher]="matcher"
-        (blur)="onTouched()"
+        (blur)="onInputBlur()"
         (focus)="onInputFocus()"
         (click)="triggerSearch()">
 

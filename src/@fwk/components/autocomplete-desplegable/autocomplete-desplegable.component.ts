@@ -71,6 +71,9 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
     matcher = new class implements ErrorStateMatcher {
         constructor(private component: AutocompleteDesplegableComponent) { }
         isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
+            if (this.component.isFocused) {
+                return false;
+            }
             return !!(this.component.errorMessage || (control?.invalid && (control?.dirty || control?.touched)));
         }
     }(this);
@@ -78,6 +81,7 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
     private destroy$ = new Subject<void>();
     private isOptionSelected: boolean = false;
     private searchTrigger$ = new Subject<any>();
+    isFocused: boolean = false;
 
     onChange: (value: any) => void = () => { };
     onTouched: () => void = () => { };
@@ -229,7 +233,9 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
             return { required: true };
         }
 
-        if (typeof value === 'string' && value.trim() !== '') {
+        const options = this.config?.options as AutocompleteOptions;
+
+        if (typeof value === 'string' && value.trim() !== '' && !options?.allowFreeText) {
             return { selectOrCleanField: true };
         }
 
@@ -256,6 +262,8 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
     }
 
     onInputFocus(): void {
+        this.isFocused = true;
+        this.cdr.markForCheck();
         if (!this.autocompleteControl.disabled) {
             const val = this.autocompleteControl.value;
 
@@ -263,6 +271,13 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
                 this.autocompleteControl.setValue(val || '', { emitEvent: true });
             }
         }
+    }
+
+    onInputBlur(): void {
+        this.isFocused = false;
+        this.onTouched();
+        this.autocompleteControl.updateValueAndValidity();
+        this.cdr.markForCheck();
     }
 
     triggerSearch(): void {

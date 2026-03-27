@@ -1,4 +1,4 @@
-﻿import { Observable } from "rxjs";
+import { Observable } from "rxjs";
 
 export interface AutocompleteConfiguration {
     key: string;
@@ -21,6 +21,7 @@ export interface AutocompleteOptions {
     minTermLength?: number;
     useFormSenderFilter?: boolean;
     searchOnFocus?: boolean;
+    allowFreeText?: boolean;
 }
 
 export interface AutocompleteChangeValue {

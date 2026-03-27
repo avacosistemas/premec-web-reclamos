@@ -46,6 +46,7 @@ export interface AutocompleteOptions extends BaseFieldOptions {
     useFormSenderFilter?: boolean;
     fromData?: any[];
     searchOnFocus?: boolean;
+    allowFreeText?: boolean;
 }
 
 export interface PickListOptions extends BaseFieldOptions {

@@ -2,7 +2,7 @@
     <mat-label>{{ config?.label }}</mat-label>
 
     <input #inputElement type="text" matInput [formControl]="autocompleteControl" [matAutocomplete]="auto"
-        [required]="config?.required" (focus)="onFocus()" [errorStateMatcher]="matcher">
+        [required]="config?.required" (focus)="onFocus()" (blur)="onBlur()" [errorStateMatcher]="matcher">
 
     <button type="button" mat-icon-button matSuffix (click)="clear($event)" *ngIf="autocompleteControl.value">
         <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>

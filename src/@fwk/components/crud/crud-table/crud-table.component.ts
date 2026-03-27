@@ -325,7 +325,9 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
     }
 
     submitAction(action: ActionDef, entity: any, $event: MouseEvent): void {
-        $event.stopPropagation();
+        if ($event && !($event.currentTarget as HTMLElement).hasAttribute('mat-menu-item')) {
+            $event.stopPropagation();
+        }
         if (this.columnDefId) {
             entity.id = entity[this.columnDefId];
         }
