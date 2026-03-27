@@ -140,7 +140,7 @@ export class CrudModalComponent extends AbstractComponent implements OnInit, Aft
     const closeDialog = (): void => {
       this.dialogRef.close();
     };
-    if (this.isObjectModified && !this.isRead) {
+    if (this.form.dirty && !this.isRead) {
       this.dialogService.showQuestionModal({
         title: this.translate('modal_close_warning_title'),
         message: this.translate('modal_close_warning_message'),

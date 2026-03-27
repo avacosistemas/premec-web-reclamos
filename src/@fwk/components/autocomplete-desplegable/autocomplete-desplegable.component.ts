@@ -109,7 +109,7 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
             });
     }
 
-    private updateSiblingField(value: any): void {
+    private updateSiblingField(value: any, markAsDirty: boolean = true): void {
         const options = this.config?.options as AutocompleteOptions;
 
         if (this.controlContainer && this.controlContainer.control) {
@@ -125,7 +125,7 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
 
                     if (targetControl.value !== valToSet) {
                         targetControl.setValue(valToSet);
-                        targetControl.markAsDirty();
+                        if (markAsDirty) targetControl.markAsDirty();
                     }
                 }
             }
@@ -138,7 +138,7 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
                         const valToSet = value[sourceProp];
                         if (targetControl.value !== valToSet) {
                             targetControl.setValue(valToSet);
-                            targetControl.markAsDirty();
+                            if (markAsDirty) targetControl.markAsDirty();
                         }
                     }
                 });
@@ -193,11 +193,12 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
         this.autocompleteControl.setValue(value, { emitEvent: false });
 
         if (value) {
-            this.updateSiblingField(value);
+            this.updateSiblingField(value, false);
         } else {
             this.isOptionSelected = false;
 
             this.autocompleteControl.setValue('', { emitEvent: false });
+            this.updateSiblingField(null, false);
 
             this.autocompleteControl.markAsPristine();
             this.autocompleteControl.markAsUntouched();

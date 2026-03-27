@@ -1,4 +1,4 @@
-﻿import { ValidationDef } from '@fwk/services/dynamic-form/form.validator.service';
+import { ValidationDef } from '@fwk/services/dynamic-form/form.validator.service';
 import { DynamicFieldOptions } from './dynamic-field-options.interface';
 
 export const LABEL = 'label';
@@ -12,6 +12,7 @@ export const AUTOCOMPLETE_DESPLEGABLE: any = 'autocomplete-desplegable';
 export const SELECT: any = 'select';
 export const DATEPICKER: any = 'datepicker';
 export const DATETIMEPICKER: any = 'datetimepicker';
+export const TIMEPICKER: any = 'timepicker';
 export const CHECKBOX: any = 'checkbox';
 export const HEADER: any = 'header';
 export const TEXTAREA: any = 'textarea';
@@ -47,6 +48,7 @@ export enum CONTROL_TYPE {
   Select = 'select',
   Datepicker = 'datepicker',
   Datetimepicker = 'datetimepicker',
+  Timepicker = 'timepicker',
   Checkbox = 'checkbox',
   Header = 'header',
   Textarea = 'textarea',
@@ -82,6 +84,7 @@ export enum ControlTypeEnum {
   select = 'SELECT',
   datepicker = 'DATEPICKER',
   datetimepicker = 'DATETIMEPICKER',
+  timepicker = 'TIMEPICKER',
   checkbox = 'CHECKBOX',
   header = 'HEADER',
   textarea = 'TEXTAREA',

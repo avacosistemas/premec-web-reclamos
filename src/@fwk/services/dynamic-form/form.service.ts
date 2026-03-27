@@ -277,7 +277,7 @@ export class FormService {
 
   private createFormControlForField(field: DynamicField<any>, options: any): FormControl {
     const formState = {
-      value: field.value ?? '',
+      value: field.value ?? null,
       disabled: field.disabled ?? options?.disabled ?? false
     };
     const validators = this.formValidatorService.getValidators(field);

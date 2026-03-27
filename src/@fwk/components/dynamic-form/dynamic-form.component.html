@@ -26,6 +26,12 @@
                 [errorMessage]="(form.get(field.key)?.invalid && form.get(field.key)?.touched) ? getMessageErrorValidation(field) : null"
                 [cdkFocusInitial]="i === firstFocusableFieldIndex">
             </fwk-custom-datepicker>
+            
+            <fwk-custom-datepicker *ngSwitchCase="'timepicker'" class="w-full" [field]="field"
+                [formControlName]="field.key"
+                [errorMessage]="(form.get(field.key)?.invalid && form.get(field.key)?.touched) ? getMessageErrorValidation(field) : null"
+                [cdkFocusInitial]="i === firstFocusableFieldIndex">
+            </fwk-custom-datepicker>
 
             <fwk-file *ngSwitchCase="'file'" class="w-full" [field]="field" [formControlName]="field.key"
                 [errorMessage]="(form.get(field.key)?.invalid && form.get(field.key)?.touched) ? getMessageErrorValidation(field) : null"

@@ -212,6 +212,7 @@ const ERROR_MESSAGE_GENERATORS: { [key: string]: (service: FormValidatorService,
     }
     return service['translate']('generic_error_message', (field.label ?? field.key).toLowerCase());
   },
+  'invalidDate': (_, __, error) => typeof error === 'string' ? error : 'Fecha inválida',
   ...ERROR_MESSAGES_HELPER
 };
 

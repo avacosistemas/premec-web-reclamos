@@ -1,4 +1,4 @@
-﻿<mat-expansion-panel #searchPanel class="border-t shadow-none rounded-none dark:bg-transparent" [expanded]="false"
+<mat-expansion-panel #searchPanel class="border-t shadow-none rounded-none dark:bg-transparent" [expanded]="false"
     *ngIf="generalFields && generalFields.length > 0">
     <mat-expansion-panel-header class="px-4 sm:px-6">
         <mat-panel-title class="flex items-center space-x-3">
@@ -40,7 +40,7 @@
                 <span class="ml-2 hidden sm:inline">{{ 'search_columns_button' | translate }}</span>
             </button>
 
-            <mat-menu #columnasMenu="matMenu" class="max-h-96 rounded-2xl">
+            <mat-menu #columnasMenu="matMenu" class="h-[300px] overflow-y-auto rounded-2xl">
                 <div class="px-4 py-2 text-sm font-semibold border-b">{{ 'search_columns_title' | translate }}</div>
                 <ng-container *ngFor="let col of menuColumns">
                     <div (click)="$event.stopPropagation()">

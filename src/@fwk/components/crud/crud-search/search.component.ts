@@ -128,16 +128,13 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
   }
 
   private buildMenuColumns(): void {
-    if (!this.columnsDef || !this.initialDisplayableColumns) {
+    if (!this.columnsDef) {
       this.menuColumns = [];
       return;
     }
 
-    const allColsMap = new Map(this.columnsDef.map(c => [c.columnDef, c]));
-
-    this.menuColumns = this.initialDisplayableColumns
-      .map(columnDef => allColsMap.get(columnDef))
-      .filter(col => !!(col && col.columnName))
+    this.menuColumns = this.columnsDef
+      .filter(col => !!col.columnName)
       .map(col => ({
         columnDef: col.columnDef,
         columnName: col.columnName

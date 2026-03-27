@@ -351,7 +351,7 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
             const recordId = entity[idKey] || entity.id;
 
             this.spinnerGeneralControl.show();
-            const fetch$ = (recordId && this.crud?.service && typeof this.crud.service.getById === 'function')
+            const fetch$ = (recordId && this.crud?.service && typeof this.crud.service.getById === 'function' && this.crud.crudDef?.forceGetDetail)
                 ? this.crud.service.getById(recordId)
                 : of(entity);
 

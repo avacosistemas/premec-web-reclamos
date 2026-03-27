@@ -151,6 +151,9 @@ export class DynamicFormComponent extends AbstractComponent implements OnInit, O
             if (field.controlType === 'datetimepicker') {
                 field.options = { ...field.options, withHourAndMin: true };
             }
+            if (field.controlType === 'timepicker') {
+                field.options = { ...field.options, withHourAndMin: true, format: 'HH:mm:ss' };
+            }
         });
 
         this.form = this.formService.toFormGroupEntity(this.entity, this.fields, { disabled: !this.isEdit }, this.onFieldsChanges);

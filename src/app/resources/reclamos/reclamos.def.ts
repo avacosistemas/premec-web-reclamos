@@ -24,8 +24,7 @@ export const RECLAMOS_DEF: CrudDef = {
     dialogConfig: {
         width: '800px'
     },
-    forceGetDetail: true,
-    wsGetDetail: PREFIX_DOMAIN_API + 'reclamo',
+    forceGetDetail: false,
     readCondition: { key: 'estadoReclamo', compare: CONDITION_COMPARE.EQUALS, value: 'Cerrado' },
     forms: {
         filter: RECLAMOS_FILTER_FORM_FIELDS_DEF,

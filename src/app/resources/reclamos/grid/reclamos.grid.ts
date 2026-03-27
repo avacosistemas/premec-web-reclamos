@@ -27,8 +27,16 @@ export const RECLAMOS_GRID_DEF: GridDef = {
         { columnDef: 'internalSN', columnNameKey: 'cl_maquina' },
         { columnDef: 'fechaCreacion', columnNameKey: 'cl_fecha_creacion' },
         { columnDef: 'fechaInicioActividad', columnNameKey: 'cl_fecha_inicio' },
-        { columnDef: 'fechaFinActividad', columnNameKey: 'cl_fecha_fin' }
+        { columnDef: 'fechaFinActividad', columnNameKey: 'cl_fecha_fin' },
+        { columnDef: 'customerCode', columnNameKey: 'cl_customer_code' },
+        { columnDef: 'estadoServiceCall', columnNameKey: 'cl_estado_service_call' },
+        { columnDef: 'horaCreacion', columnNameKey: 'cl_hora_creacion' },
+        { columnDef: 'equipmentCardNum', columnNameKey: 'cl_equipment_card_num' },
+        { columnDef: 'manufacturerSerialNum', columnNameKey: 'cl_manufacturer_serial_num' },
+        { columnDef: 'itemCode', columnNameKey: 'cl_item_code' },
+        { columnDef: 'itemName', columnNameKey: 'cl_item_name' }
     ],
+
     displayedColumns: ['serviceCallID', 'estadoReclamo', 'asunto', 'internalSN', 'fechaCreacion', 'fechaInicioActividad', 'fechaFinActividad'],
     actions: [
         {
