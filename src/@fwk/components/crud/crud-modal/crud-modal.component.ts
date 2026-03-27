@@ -110,20 +110,26 @@ export class CrudModalComponent extends AbstractComponent implements OnInit, Aft
   ngAfterViewInit(): void {
     if (this.dynamicForm) {
       setTimeout(() => {
-        this.dynamicForm.updateInitialState();
+        if (this.dynamicForm.form) {
+          this.dynamicForm.updateInitialState();
+        }
 
         if (this.fieldsBehavior && this.fieldsBehavior.length > 0) {
           const uniqueTriggerFields = [...new Set(this.fieldsBehavior.map(fb => fb.fieldKey))];
 
-          uniqueTriggerFields.forEach(key => {
-            this.formService.fieldChangeBehavior(
-              key,
-              this.fieldsBehavior!,
-              this.entity,
-              this.fields,
-              this.form.get('subForm') as FormGroup
-            );
-          });
+          const subForm = this.form.get('subForm') as FormGroup;
+
+          if (subForm) {
+            uniqueTriggerFields.forEach(key => {
+              this.formService.fieldChangeBehavior(
+                key,
+                this.fieldsBehavior!,
+                this.entity,
+                this.fields,
+                subForm
+              );
+            });
+          }
         }
 
         this._cdr.markForCheck();

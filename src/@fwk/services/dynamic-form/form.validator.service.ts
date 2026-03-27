@@ -93,6 +93,7 @@ export class FormValidatorService {
         url_protocol_error_message: 'El campo {0} debe comenzar con http:// o https://',
         url_incomplete_error_message: 'La URL en el campo {0} está incompleta o mal formada',
         url_format_error_message: 'El campo {0} no tiene un formato válido',
+        autocomplete_select_or_clean_error: 'Debe seleccionar un elemento de la lista o limpiar el campo',
       }
     });
     this.i18nService.getByName('form-validator').subscribe(i18n => { this.i18n = i18n; });
@@ -213,6 +214,12 @@ const ERROR_MESSAGE_GENERATORS: { [key: string]: (service: FormValidatorService,
     return service['translate']('generic_error_message', (field.label ?? field.key).toLowerCase());
   },
   'invalidDate': (_, __, error) => typeof error === 'string' ? error : 'Fecha inválida',
+  'selectOrCleanField': (service, field) => {
+    if (field.options && (field.options as any).selectElementOrCleanField) {
+      return (field.options as any).selectElementOrCleanField;
+    }
+    return service['translate']('autocomplete_select_or_clean_error');
+  },
   ...ERROR_MESSAGES_HELPER
 };
 

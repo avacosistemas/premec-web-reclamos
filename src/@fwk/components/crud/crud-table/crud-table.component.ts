@@ -424,8 +424,28 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
 
     private handleRedirectAction(action: any, entity: any, $event: MouseEvent): void {
         this.spinnerGeneralControl.show();
-        let url: string = action.redirect.url;
-        const queryParams: Params = this.getQueryParams(action.redirect.querystring, entity);
+        let url: string = action.redirect?.url || '';
+
+        if (url && entity) {
+            Object.keys(entity).forEach(key => {
+                const value = entity[key] !== undefined && entity[key] !== null ? entity[key] : '';
+                const regex = new RegExp(`\\{\\{${key}\\}\\}|\\{${key}\\}`, 'g');
+                url = url.replace(regex, String(value));
+            });
+        }
+
+        if (action.redirect?.idUrl && entity) {
+            const idProp = typeof action.redirect.idUrl === 'string' ? action.redirect.idUrl : 'id';
+            const idValue = entity[idProp];
+            if (idValue !== undefined && idValue !== null && idValue !== '') {
+                if (url.endsWith('/')) {
+                    url = url.slice(0, -1);
+                }
+                url += `/${idValue}`;
+            }
+        }
+
+        const queryParams: Params = this.getQueryParams(action.redirect?.querystring, entity);
 
         if (queryParams['externalUrl']) {
             url = queryParams['externalUrl'];
@@ -435,7 +455,7 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
             delete queryParams['externalUrl'];
         }
 
-        if (action.redirect.openTab || $event.ctrlKey) {
+        if (action.redirect?.openTab || $event.ctrlKey) {
             let queryParamsString = "";
             if (Object.keys(queryParams).length > 0) {
                 const paramsStr = new URLSearchParams(queryParams).toString();
