@@ -96,13 +96,7 @@ export const RECLAMOS_CREATE_BEHAVIOR_DEF: DynamicFieldBehavior[] = [
             then: [
                 {
                     key: 'feedback_prioridad',
-                    controlType: 'alert',
-                    label: 'Te asistiremos en la proxima semana.',
-                    options: { type: 'info' },
-                    showModal: {
-                        message: 'Te asistiremos en la proxima semana.',
-                        buttonLabel: 'Entendido'
-                    }
+                    value: 'msg_prioridad_baja'
                 } as any
             ]
         }
@@ -120,13 +114,7 @@ export const RECLAMOS_CREATE_BEHAVIOR_DEF: DynamicFieldBehavior[] = [
             then: [
                 {
                     key: 'feedback_prioridad',
-                    controlType: 'alert',
-                    label: 'Atenderemos tu reclamo en las proximas 48 hs.',
-                    options: { type: 'info' },
-                    showModal: {
-                        message: 'Atenderemos tu reclamo en las proximas 48 hs.',
-                        buttonLabel: 'Entendido'
-                    }
+                    value: 'msg_prioridad_alta'
                 } as any
             ]
         }

@@ -157,9 +157,14 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
         });
         return dialogRef.afterClosed();
       })
-    ).subscribe(result => {
+    ).subscribe((result: { response: any, entity: any } | any) => {
       if (result) {
         this.findAll();
+        const response = result?.response || result;
+        const entity = result?.entity;
+        if (this.crudDef.onAddSuccess && entity) {
+          this.crudDef.onAddSuccess(entity, response, this._injector);
+        }
       }
     });
   }
@@ -230,9 +235,14 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
         data: data
       });
 
-      dialogRef.afterClosed().subscribe((result) => {
+      dialogRef.afterClosed().subscribe((result: { response: any, entity: any } | any) => {
         if (result) {
           this.findAll();
+          const response = result?.response || result;
+          const entity = result?.entity;
+          if (this.crudDef.onUpdateSuccess && entity) {
+            this.crudDef.onUpdateSuccess(entity, response, this._injector);
+          }
         }
       });
     }

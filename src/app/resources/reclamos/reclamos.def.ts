@@ -11,6 +11,10 @@ import { RECLAMOS_MOCK_DATA } from "./api-mock/reclamos.mock";
 import { CONDITION_COMPARE } from "@fwk/model/dynamic-form/dynamic-field-condition-if";
 import { PREFIX_DOMAIN_API } from "environments/environment";
 
+import { DialogService } from "@fwk/services/dialog-service/dialog.service";
+import { I18nService } from "@fwk/services/i18n-service/i18n.service";
+import { Injector } from "@angular/core";
+
 export const RECLAMOS_DEF: CrudDef = {
     name: 'RECLAMOS',
     i18n: RECLAMOS_I18N_DEF,
@@ -43,5 +47,24 @@ export const RECLAMOS_DEF: CrudDef = {
     pagination: {
         page: 0,
         pageSize: 10
+    },
+    onAddSuccess: (entity: any, response: any, injector: Injector) => {
+        if (entity.feedback_prioridad) {
+            const dialogService = injector.get(DialogService);
+            const i18nService = injector.get(I18nService);
+            const message = i18nService.translate(entity.feedback_prioridad, 'RECLAMOS');
+
+            dialogService.showQuestionModal({
+                title: 'Aviso',
+                message: message,
+                onSubmit: () => { },
+                actions: {
+                    confirm: {
+                        label: 'Entendido'
+                    },
+                    cancel: { show: false }
+                }
+            });
+        }
     }
 };

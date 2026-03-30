@@ -65,10 +65,13 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     matcher = new class implements ErrorStateMatcher {
         constructor(private component: AutocompleteComponent) { }
         isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
+            if (this.component.errorMessage) {
+                return true;
+            }
             if (this.component.isFocused) {
                 return false;
             }
-            return !!(this.component.errorMessage || (control?.invalid && (control?.dirty || control?.touched)));
+            return !!(control?.invalid && (control?.dirty || control?.touched));
         }
     }(this);
 
@@ -91,12 +94,15 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
         this.setupFiltering();
 
         this.autocompleteControl.valueChanges
-            .pipe(takeUntil(this.destroy$))
+            .pipe(
+                distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+                takeUntil(this.destroy$)
+            )
             .subscribe(value => {
                 if (typeof value !== 'string') {
                     this.onChange(value);
                 } else {
-                    this.onChange(null);
+                    this.onChange(value); // Let parent know about string value
                 }
             });
     }
@@ -149,13 +155,28 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
         const value = this.autocompleteControl.value;
         this.focus$.next(typeof value === 'string' ? value : '');
         this.onTouched();
+        
+        if (this.autocompleteTrigger) {
+            setTimeout(() => {
+                if (this.autocompleteTrigger.panelOpen) {
+                    this.autocompleteTrigger.updatePosition();
+                }
+            }, 100);
+            setTimeout(() => {
+                if (this.autocompleteTrigger.panelOpen) {
+                    this.autocompleteTrigger.updatePosition();
+                }
+            }, 300);
+        }
     }
 
     onBlur(): void {
-        this.isFocused = false;
-        this.onTouched();
-        this.autocompleteControl.updateValueAndValidity();
-        this.cdr.markForCheck();
+        setTimeout(() => {
+            this.isFocused = false;
+            this.onTouched();
+            this.autocompleteControl.updateValueAndValidity();
+            this.cdr.markForCheck();
+        }, 200);
     }
 
     writeValue(value: any): void {
@@ -180,7 +201,7 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
         const value = this.autocompleteControl.value;
         const isRequired = this.config?.required;
 
-        if (isRequired && (value === null || value === undefined)) {
+        if (isRequired && (value === null || value === undefined || value === '')) {
             return { required: true };
         }
 
@@ -202,6 +223,8 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     onOptionSelected(): void {
         this.isOptionSelected = true;
         this.onTouched();
+        this.autocompleteControl.updateValueAndValidity();
+        this.cdr.markForCheck();
     }
 
     clear(event: MouseEvent): void {

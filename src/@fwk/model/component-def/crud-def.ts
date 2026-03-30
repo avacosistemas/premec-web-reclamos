@@ -1,3 +1,4 @@
+import { Injector } from '@angular/core';
 import { ComponentDef } from './component-def';
 import { FormsCrudDef } from './form-crud-def';
 import { GridDef } from './grid-def';
@@ -39,4 +40,6 @@ export class CrudDef extends ComponentDef {
   
   mock?: boolean;
   mockData?: any;
+  onAddSuccess?: (entity: any, response: any, injector: Injector) => void;
+  onUpdateSuccess?: (entity: any, response: any, injector: Injector) => void;
 }

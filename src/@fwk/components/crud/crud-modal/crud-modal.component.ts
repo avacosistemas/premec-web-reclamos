@@ -285,7 +285,7 @@ export class CrudModalComponent extends AbstractComponent implements OnInit, Aft
                 this.submitting = false;
                 this._cdr.markForCheck();
               } else {
-                this.dialogRef.close(response || true);
+                this.dialogRef.close({ response: response || true, entity: this.entity });
               }
             } else {
               this.notificationService.notifyError(response?.message || 'Ocurrió un error desconocido.');

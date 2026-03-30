@@ -76,7 +76,9 @@ export class DialogService {
         return this.dialog.open(QuestionModalComponent, {
             width: '450px',
             maxWidth: '90vw',
-            data: data
+            data: data,
+            panelClass: 'alert-modal-panel',
+            backdropClass: 'alert-modal-backdrop'
         });
     }
 
