@@ -102,7 +102,7 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
                 if (typeof value !== 'string') {
                     this.onChange(value);
                 } else {
-                    this.onChange(value); // Let parent know about string value
+                    this.onChange(value);
                 }
             });
     }
@@ -131,8 +131,10 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
         this.filteredOptions$ = triggers$.pipe(
             takeUntil(this.destroy$),
             switchMap(value => {
-                const term = value || '';
-                if (this.isOptionSelected) {
+                const isObject = typeof value === 'object' && value !== null;
+                const term = isObject ? '' : (value || '');
+
+                if (this.isOptionSelected || isObject) {
                     this.isOptionSelected = false;
                     return of([]);
                 }

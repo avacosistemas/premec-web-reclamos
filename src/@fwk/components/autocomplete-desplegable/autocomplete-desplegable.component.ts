@@ -112,7 +112,7 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
                     this.onChange(value);
                     this.updateSiblingField(value);
                 } else {
-                    this.onChange(value); // Propagate string value for validation
+                    this.onChange(value);
                     if (!this.isOptionSelected) {
                         this.updateSiblingField(null);
                     }
@@ -187,11 +187,10 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
                     return of([]);
                 }
 
-                // If it's an object from triggerSearch (searchTrigger$), we allow the search with empty term
                 const isObject = typeof value === 'object' && value !== null;
                 const searchTerm = isObject ? '' : (typeof value === 'string' ? value : '');
 
-                if (searchTerm === '' && !searchOnFocus && !isObject) {
+                if (isObject || (searchTerm === '' && !searchOnFocus)) {
                     return of([]);
                 }
 
@@ -266,7 +265,7 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
     onOptionSelected(): void {
         this.isOptionSelected = true;
         this.onTouched();
-        this.autocompleteControl.updateValueAndValidity(); // Ensure validation updates immediately on selection
+        this.autocompleteControl.updateValueAndValidity();
         this.cdr.markForCheck();
     }
 
@@ -274,7 +273,6 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
         this.isFocused = true;
         this.cdr.markForCheck();
         
-        // Ensure position is corrected if the panel opens during a parent modal/dialog animation
         if (this.autoCompleteTrigger) {
             setTimeout(() => {
                 if (this.autoCompleteTrigger.panelOpen) {

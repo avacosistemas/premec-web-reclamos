@@ -490,7 +490,7 @@ export class FormService {
             });
           }
 
-          if ((fieldDef as any).validationWs) {
+          if ((fieldDef as any).validationWs && (fieldDef as any).validationWs.url) {
             const validationDef = (fieldDef as any).validationWs;
             const control = form.get(fieldDef.key);
             let value = control?.value;
