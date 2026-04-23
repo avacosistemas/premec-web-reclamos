@@ -44,7 +44,7 @@ export const RECLAMOS_I18N_DEF: I18n = {
         'f_tipo': 'Tipo de Problema',
         'f_subtipo': 'Subtipo de Problema',
         'f_comentario': 'Agregar Comentario',
-        'f_prioridad': 'Prioridad',
+        'f_prioridad': 'Estado de la máquina',
         'f_prioridad_baja': 'Funciona',
         'f_prioridad_alta': 'No Funciona',
         'msg_prioridad_baja': 'Te asistiremos en la proxima semana.',

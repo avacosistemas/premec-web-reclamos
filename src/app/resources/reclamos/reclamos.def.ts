@@ -34,8 +34,8 @@ export const RECLAMOS_DEF: CrudDef = {
         filter: RECLAMOS_FILTER_FORM_FIELDS_DEF,
         create: RECLAMOS_CREATE_FORM_FIELDS_DEF,
         createBehavior: RECLAMOS_CREATE_BEHAVIOR_DEF,
-        update: RECLAMOS_UPDATE_FORM_FIELDS_DEF,
-        read: RECLAMOS_READ_FORM_FIELDS_DEF
+        // update: RECLAMOS_UPDATE_FORM_FIELDS_DEF,
+        // read: RECLAMOS_READ_FORM_FIELDS_DEF
     },
     security: {
         createAccess: 'AGREGAR_RECLAMO'

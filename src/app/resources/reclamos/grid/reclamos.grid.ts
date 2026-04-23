@@ -39,12 +39,12 @@ export const RECLAMOS_GRID_DEF: GridDef = {
 
     displayedColumns: ['serviceCallID', 'estadoReclamo', 'asunto', 'internalSN', 'fechaCreacion', 'fechaInicioActividad', 'fechaFinActividad'],
     actions: [
-        {
-            actionNameKey: 'action_editar',
-            actionType: 'form_modal',
-            icon: 'heroicons_outline:pencil-square',
-            form: RECLAMOS_UPDATE_FORM_FIELDS_DEF
-        }
+        // {
+        //     actionNameKey: 'action_editar',
+        //     actionType: 'form_modal',
+        //     icon: 'heroicons_outline:pencil-square',
+        //     form: RECLAMOS_UPDATE_FORM_FIELDS_DEF
+        // }
     ],
     displayedActionsCondition: [
         {
