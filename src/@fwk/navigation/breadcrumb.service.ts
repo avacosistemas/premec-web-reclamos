@@ -2,7 +2,9 @@ import { inject, Injectable } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, filter } from 'rxjs';
 import { NavigationService } from './navigation.service';
+import { I18nService } from '../services/i18n-service/i18n.service';
 import { CrudDef } from '../model/component-def/crud-def';
+import { environment } from 'environments/environment';
 
 export interface Breadcrumb {
     label: string;
@@ -15,6 +17,7 @@ export interface Breadcrumb {
 export class BreadcrumbService {
     private _router = inject(Router);
     private _navigationService = inject(NavigationService);
+    private _i18nService = inject(I18nService);
     
     private _breadcrumbs = new BehaviorSubject<Breadcrumb[]>([]);
     breadcrumbs$ = this._breadcrumbs.asObservable();
@@ -61,8 +64,11 @@ export class BreadcrumbService {
 
         const breadcrumbs: Breadcrumb[] = [];
         
-        if (urlWithoutParams !== '/welcome' && urlWithoutParams !== '/') {
-            breadcrumbs.push(this._createBreadcrumb('Inicio', '/welcome', 'heroicons_outline:home'));
+        const homeUrl = environment.appConfig.showWelcome ? '/welcome' : (environment.appConfig.urlToRedirect || '/');
+        const cleanHomeUrl = homeUrl.split('?')[0].toLowerCase().replace(/^\/+|\/+$/g, '');
+
+        if (urlWithoutParams !== cleanHomeUrl && urlWithoutParams !== '/' && urlWithoutParams !== 'welcome') {
+            breadcrumbs.push(this._createBreadcrumb(this._i18nService.translate('breadcrumb_home'), homeUrl, 'heroicons_outline:home'));
         }
 
         if (currentCrudDef) {
@@ -184,14 +190,7 @@ export class BreadcrumbService {
 
     private _createBreadcrumbForDef(def: CrudDef): Breadcrumb {
         const nav = def.navigation!;
-        let label = nav.translateKey || def.name || 'Página';
-
-        if (def.i18n) {
-            const dict = def.i18n.words || def.i18n.dictionary;
-            if (dict && nav.translateKey && dict[nav.translateKey]) {
-                label = dict[nav.translateKey];
-            }
-        }
+        let label = nav.translateKey ? this._i18nService.translate(nav.translateKey) : (def.name || 'Página');
 
         return this._createBreadcrumb(label, this._getStoredUrl(nav.url || ''), nav.icon);
     }

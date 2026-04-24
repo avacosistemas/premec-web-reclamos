@@ -238,12 +238,13 @@ export class NavigationService {
     }
 
     public getCrudDefByUrl(url: string): CrudDef | undefined {
-        const urlWithoutParams = url.split('?')[0].split('#')[0].toLowerCase();
+        const normalize = (u: string) => u.split('?')[0].split('#')[0].toLowerCase().replace(/^\/+|\/+$/g, '');
+        const urlClean = normalize(url);
         
         const matches = this._allCrudDefs.filter(d => {
             if (!d.navigation?.url) return false;
-            const navUrlWithoutParams = d.navigation.url.split('?')[0].split('#')[0].toLowerCase();
-            return urlWithoutParams === navUrlWithoutParams || urlWithoutParams.startsWith(navUrlWithoutParams + '/');
+            const navUrlClean = normalize(d.navigation.url);
+            return urlClean === navUrlClean || urlClean.startsWith(navUrlClean + '/');
         });
 
         if (matches.length === 0) return undefined;
