@@ -68,7 +68,7 @@
             </div>
         </div>
 
-        <div class="flex flex-col gap-2 w-full p-4 sm:px-6 pt-0">
+        <div *ngIf="deniedCreateAlerts.length > 0 || generalAlerts.length > 0" class="flex flex-col gap-2 w-full p-4 sm:px-6 pt-0">
             <fuse-alert *ngFor="let alert of deniedCreateAlerts"
                 class="max-w-full" [type]="alert.type" [appearance]="'soft'" [showIcon]="true">
                 {{ alert.messageKey | translate:alert.params:crudDef.i18n?.name }}
