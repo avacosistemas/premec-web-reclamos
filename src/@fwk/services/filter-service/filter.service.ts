@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { CONTROL_TYPE } from '../../model/dynamic-form/dynamic-field';
 import { MY_FORMATS } from '../dynamic-form/form.validator.service';
 import { parse, isEqual, isBefore, isAfter, isSameDay } from 'date-fns';

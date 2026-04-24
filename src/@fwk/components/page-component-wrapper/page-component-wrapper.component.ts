@@ -17,6 +17,7 @@ import { TranslatePipe } from '@fwk/pipe/translate.pipe';
 import { BackButtonComponent } from '@fwk/components/back-button/backbutton.component';
 import { AuthService } from '@fwk/auth/auth.service';
 import { I18nService } from '@fwk/services/i18n-service/i18n.service';
+import { BreadcrumbComponent } from '@fwk/navigation/breadcrumb/breadcrumb.component';
 
 @Component({
     selector: 'fwk-page-component-wrapper',
@@ -24,7 +25,8 @@ import { I18nService } from '@fwk/services/i18n-service/i18n.service';
     imports: [
         CommonModule, MatButtonModule, MatIconModule,
         MatTooltipModule, MatProgressSpinnerModule,
-        TranslatePipe, BackButtonComponent
+        TranslatePipe, BackButtonComponent,
+        BreadcrumbComponent
     ],
     templateUrl: './page-component-wrapper.component.html'
 })

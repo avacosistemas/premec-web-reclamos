@@ -15,7 +15,7 @@ export const RECLAMOS_CREATE_BEHAVIOR_DEF: DynamicFieldBehavior[] = [
                         valueProperty: 'InternalSerialNum',
                         assignResultToField: 'maquina_valida',
                         showModalOnFail: true,
-                        errorMessage: 'La máquina seleccionada no es válida para generar reclamos'
+                        errorMessage: 'msg_maquina_sin_contrato_error'
                     }
                 } as any
             ],
@@ -23,6 +23,7 @@ export const RECLAMOS_CREATE_BEHAVIOR_DEF: DynamicFieldBehavior[] = [
                 { key: 'tipo', disabled: true, value: null } as any,
                 { key: 'maquina_tipo', value: null } as any,
                 { key: 'maquina_valida', value: null } as any,
+                { key: 'maquina_contrato_alerta', hidden: true } as any,
                 { key: 'asunto', disabled: true, value: null } as any,
                 { key: 'descripcion', disabled: true, value: null } as any,
                 { key: 'equipmentCardNum', value: null } as any,
@@ -61,7 +62,8 @@ export const RECLAMOS_CREATE_BEHAVIOR_DEF: DynamicFieldBehavior[] = [
             then: [
                 { key: 'tipo', disabled: false } as any,
                 { key: 'asunto', disabled: false } as any,
-                { key: 'descripcion', disabled: false } as any
+                { key: 'descripcion', disabled: false } as any,
+                { key: 'maquina_contrato_alerta', hidden: true } as any
             ],
             else: [
                 { key: 'tipo', disabled: true, value: null } as any,
@@ -116,6 +118,40 @@ export const RECLAMOS_CREATE_BEHAVIOR_DEF: DynamicFieldBehavior[] = [
                     key: 'feedback_prioridad',
                     value: 'msg_prioridad_alta'
                 } as any
+            ]
+        }
+    },
+    {
+        fieldKey: 'fechaVencimiento',
+        condition: {
+            if: [
+                { key: 'fechaVencimiento', compare: CONDITION_COMPARE.HAS_VALUE }
+            ],
+            then: [
+                {
+                    key: 'vencimiento_alerta',
+                    hidden: false,
+                    labelKey: 'msg_vencimiento_factura_warning',
+                    value: { fecha: '{{value}}' },
+                    options: { type: 'warning', appearance: 'soft', showIcon: true }
+                } as any
+            ],
+            else: [
+                {
+                    key: 'vencimiento_alerta',
+                    hidden: true
+                } as any
+            ]
+        }
+    },
+    {
+        fieldKey: 'maquina_valida',
+        condition: {
+            if: [
+                { key: 'maquina_valida', compare: CONDITION_COMPARE.EQUALS, value: false }
+            ],
+            then: [
+                { key: 'maquina_contrato_alerta', hidden: false } as any
             ]
         }
     }

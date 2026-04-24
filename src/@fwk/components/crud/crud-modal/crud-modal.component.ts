@@ -198,11 +198,10 @@ export class CrudModalComponent extends AbstractComponent implements OnInit, Aft
     this.submitting = true;
     this._cdr.markForCheck();
 
-    const subForm = this.form.get('subForm');
+    const subForm = this.form.get('subForm') as FormGroup;
 
     if (subForm) {
-      const formValues = subForm.getRawValue();
-      this.entity = { ...this.entity, ...formValues };
+      this.entity = this.formService.injectToEntity(this.entity, subForm, this.fields);
     } else {
       console.error('Error: No se encontró el subForm en CrudModal');
       this.submitting = false;

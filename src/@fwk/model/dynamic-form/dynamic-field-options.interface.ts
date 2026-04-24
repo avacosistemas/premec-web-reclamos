@@ -112,6 +112,13 @@ export interface ColorPickerOptions extends BaseFieldOptions {
     invalidValueMessage?: string;
 }
 
+export interface AlertOptions extends BaseFieldOptions {
+    type?: 'info' | 'success' | 'warning' | 'error';
+    appearance?: 'soft' | 'outline' | 'fill';
+    showIcon?: boolean;
+    translateArgs?: any;
+}
+
 export type DynamicFieldOptions =
     | BaseFieldOptions
     | TextboxOptions
@@ -128,4 +135,5 @@ export type DynamicFieldOptions =
     | UrlInputOptions
     | FileOptions
     | ColorPickerOptions
-    | IconPickerOptions;
+    | IconPickerOptions
+    | AlertOptions;

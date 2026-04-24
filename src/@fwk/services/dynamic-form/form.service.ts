@@ -55,7 +55,7 @@ export class FormService {
     throttleTime(2000, asyncScheduler, { leading: true, trailing: false }),
     share()
   );
-  
+
   editorTemplates: any[] = [];
   i18n?: I18n;
 
@@ -103,7 +103,7 @@ export class FormService {
 
   private translate(key?: string): string {
     if (!key) return '';
-    return this.i18n?.translate?.(key) ?? key;
+    return this.i18nService.translate(key);
   }
 
   setUpGridFromI18n(i18n: I18n, gridDef: GridDef): void {
@@ -238,7 +238,7 @@ export class FormService {
     validFields.forEach(field => {
       const control = this.createFormControlForField(field, options);
       form.addControl(field.key, control);
-      this.setUpWsDef(field, form);
+      this.setUpWsDef(field, form, validFields, onFieldsChanges);
       if (onFieldsChanges) {
         this.subscribeToFieldChanges(form, field, validFields, onFieldsChanges);
       }
@@ -307,7 +307,7 @@ export class FormService {
     }
   }
 
-  private setUpWsDef(field: DynamicField<any>, form: FormGroup): void {
+  private setUpWsDef(field: DynamicField<any>, form: FormGroup, allFields?: DynamicField<any>[], onFieldsChanges?: any): void {
     const fromWs: WsDef | undefined = field.options?.fromWs;
     if (!fromWs || ![CONTROL_TYPE.Select, CONTROL_TYPE.Autocomplete, CONTROL_TYPE.AutocompleteDesplegable, CONTROL_TYPE.Picklist, CONTROL_TYPE.SimplePicklist].includes(field.controlType as CONTROL_TYPE)) return;
 
@@ -325,21 +325,19 @@ export class FormService {
     const wsToCall: WsDef = { ...fromWs, url: url.toString(), method: HTTP_METHODS.get };
     this.genericHttpService.callWs(wsToCall).subscribe(r => {
       if (field.options) (field.options as SelectOptions).fromData = r;
+      const control = form.get(field.key);
+      if (control) {
+        control.patchValue(control.value);
+      }
+      if (onFieldsChanges && allFields) {
+        onFieldsChanges.emit({ fieldKey: field.key, entity: this.injectToEntity({}, form, allFields), fields: allFields });
+      }
     });
   }
 
   public implementedField(field: DynamicField<any>): boolean {
     const controlTypes = Object.values(CONTROL_TYPE) as string[];
     return controlTypes.includes(field.controlType.toLowerCase());
-  }
-
-  private disabledInputDatePicker(field: DynamicField<any>): void {
-    if (field.disabled) {
-      if (field.options) (field.options as DatepickerOptions).disabledPicker = true;
-    } else {
-      field.disabled = true;
-      if (field.options) (field.options as DatepickerOptions).disabledPicker = false;
-    }
   }
 
   resetFormWithFields(form: FormGroup, fields: DynamicField<any>[], options: any, onFieldsChanges: any): void {
@@ -421,30 +419,38 @@ export class FormService {
   }
 
   injectToEntity(entity: any, form: FormGroup, fields: DynamicField<any>[]): any {
+
+    const cleanedEntity: any = {};
+
     fields.forEach(element => {
       const control = form.controls[element.key];
       if (this.implementedField(element) && control) {
         const value = control.value;
-        entity[element.key] = value;
-        element.value = value;
+
+        cleanedEntity[element.key] = value;
+
         if (element.controlType === CONTROL_TYPE.Checkbox && value == null) {
-          entity[element.key] = false;
+          cleanedEntity[element.key] = false;
         }
+
         if (element.controlType === CONTROL_TYPE.Float && element.options && typeof value === 'string') {
           const options = element.options as FloatOptions;
           const delim = options.delim ?? ',';
           const outputDelim = options.outputFormatDelim ?? '.';
-          entity[element.key] = value.replace(delim, outputDelim);
+          cleanedEntity[element.key] = value.replace(delim, outputDelim);
         }
+
         if (element.controlType === CONTROL_TYPE.Number && (value != null && value !== '')) {
-          entity[element.key] = Number(value);
+          cleanedEntity[element.key] = Number(value);
         }
-        if (element.id && entity.id === undefined) {
-          entity.id = value;
+
+        if (element.id && cleanedEntity.id === undefined) {
+          cleanedEntity.id = value;
         }
       }
     });
-    return entity;
+
+    return cleanedEntity;
   }
 
   updateFieldsByField(fields: DynamicField<any>[], field: DynamicField<any>): DynamicField<any>[] {
@@ -469,17 +475,30 @@ export class FormService {
         let result = fieldBehavior.condition.if?.every(el => this.evalCondition(el, fields, entity)) ?? true;
         const fieldsToUpdate = result ? fieldBehavior.condition.then : fieldBehavior.condition.else;
         fieldsToUpdate?.forEach(fieldDef => {
-          const fieldControl = this.getFieldControl(fieldDef.key, form, fields);
-          fieldControl?.updateByDef(fieldDef);
-          if (fieldDef.showErrorMsg) {
-            this.addErrorToFields(form, { [fieldDef.key]: fieldDef.showErrorMsg });
+          const fieldDefToUpdate = JSON.parse(JSON.stringify(fieldDef));
+          const triggerValue = entity[fieldKey];
+
+          if (fieldDefToUpdate.value === '{{value}}') {
+            fieldDefToUpdate.value = triggerValue;
+          } else if (typeof fieldDefToUpdate.value === 'object' && fieldDefToUpdate.value !== null) {
+            Object.keys(fieldDefToUpdate.value).forEach(k => {
+              if (fieldDefToUpdate.value[k] === '{{value}}') {
+                fieldDefToUpdate.value[k] = triggerValue;
+              }
+            });
           }
-          if ((fieldDef as any).showModal) {
-            const modalData = (fieldDef as any).showModal;
-            const message = typeof modalData === 'string' ? modalData : modalData.message;
-            this._showModalRequest.next({
-              title: typeof modalData === 'object' && modalData.title ? modalData.title : 'Aviso',
-              message: message,
+
+          const fieldControl = this.getFieldControl(fieldDefToUpdate.key, form, fields);
+          fieldControl?.updateByDef(fieldDefToUpdate);
+          if (fieldDef.showErrorMsg) {
+            this.addErrorToFields(form, { [fieldDef.key]: this.translate(fieldDef.showErrorMsg) });
+          }
+            if ((fieldDef as any).showModal) {
+              const modalData = (fieldDef as any).showModal;
+              const message = typeof modalData === 'string' ? this.translate(modalData) : this.translate(modalData.message);
+              this._showModalRequest.next({
+                title: typeof modalData === 'object' && modalData.title ? this.translate(modalData.title) : 'Aviso',
+                message: message,
               onSubmit: () => { },
               actions: {
                 confirm: {
@@ -509,7 +528,7 @@ export class FormService {
                 }
 
                 if (!isValid) {
-                  const errorMsg = validationDef.errorMessageKey ? this.translate(validationDef.errorMessageKey) : validationDef.errorMessage;
+                  const errorMsg = validationDef.errorMessageKey ? this.translate(validationDef.errorMessageKey) : this.translate(validationDef.errorMessage);
                   this.addErrorToFields(form, { [fieldDef.key]: errorMsg || 'Validation failed' });
 
                   if (validationDef.showModalOnFail) {

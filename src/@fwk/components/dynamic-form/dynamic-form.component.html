@@ -2,7 +2,7 @@
     [formGroup]="form" novalidate>
 
     <div *ngFor="let field of fields; let i = index" class="dynamicFieldDiv" [class]="field.cssClass || ''" [ngClass]="{
-                'hidden': field.controlType === 'hidden',
+                'hidden': field.controlType === 'hidden' || field.options?.hidden,
                 'sm:col-span-1 lg:col-span-1': field.colSpan === 1,
                 'sm:col-span-2 lg:col-span-2': field.colSpan === 2,
                 'sm:col-span-2 lg:col-span-3': field.colSpan === 3,
@@ -183,7 +183,7 @@
                 [type]="field.options?.['type'] || 'info'"
                 [appearance]="field.options?.['appearance'] || 'soft'"
                 [showIcon]="field.options?.['showIcon'] !== false">
-                {{ field.label }}
+                {{ (field.labelKey || field.label) | translate:field.value }}
             </fuse-alert>
 
             <div *ngSwitchCase="'chip_list'">

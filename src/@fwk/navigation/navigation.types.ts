@@ -14,4 +14,5 @@ export interface NavigationGroup extends FuseNavigationItem {
     type: 'group' | 'collapsable' | 'basic';
     icon?: string;
     children?: FuseNavigationItem[];
+    order?: number;
 }

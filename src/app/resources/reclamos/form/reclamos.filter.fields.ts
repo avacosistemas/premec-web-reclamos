@@ -9,6 +9,23 @@ export const RECLAMOS_FILTER_FORM_FIELDS_DEF: DynamicField<any>[] = [
         colSpan: 1
     },
     {
+        key: 'estadoReclamo',
+        labelKey: 'cl_estado',
+        controlType: SELECT,
+        options: {
+            fromData: [
+                { id: '', name: 'Todos' },
+                { id: 'Rechazado', name: 'Rechazado' },
+                { id: 'Abierto', name: 'Abierto' },
+                { id: 'En Curso', name: 'En Curso' },
+                { id: 'Cerrado', name: 'Cerrado' }
+            ],
+            elementLabel: 'name',
+            elementValue: 'id'
+        },
+        colSpan: 1
+    },
+    {
         key: 'maquina',
         labelKey: 'fl_maquina',
         controlType: AUTOCOMPLETE,

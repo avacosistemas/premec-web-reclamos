@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, of } from 'rxjs';
-import { switchMap, finalize, map, tap } from 'rxjs/operators';
+import { switchMap, finalize, map, tap, takeUntil } from 'rxjs/operators';
 import { fuseAnimations } from '@fuse/animations';
 
 import { AbstractCrudComponent } from './abstract-crud.component';
@@ -15,6 +15,7 @@ import { CrudDef } from '../../model/component-def/crud-def';
 import { FormDef } from '../../model/form-def';
 import { ActionDef } from '../../model/component-def/action-def';
 import { AuthService } from '@fwk/auth/auth.service';
+import { UserService } from '@fwk/auth/user.service';
 
 import { SearchComponent } from './crud-search/search.component';
 import { CrudTableComponent } from './crud-table/crud-table.component';
@@ -26,6 +27,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslatePipe } from '../../pipe/translate.pipe';
 import { FormGridModalComponent } from '../form-grid-dialog/form-grid.dialog.component';
 import { BackButtonComponent } from '../back-button/backbutton.component'; 
+import { BreadcrumbComponent } from '@fwk/navigation/breadcrumb/breadcrumb.component';
+import { FuseAlertComponent } from '@fuse/components/alert/alert.component';
 
 @Component({
   selector: 'fwk-crud',
@@ -44,7 +47,9 @@ import { BackButtonComponent } from '../back-button/backbutton.component';
     SearchComponent,
     CrudTableComponent,
     TranslatePipe,
-    BackButtonComponent
+    BackButtonComponent,
+    BreadcrumbComponent,
+    FuseAlertComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -89,6 +94,7 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
   actionLoadingStates = new Map<string, boolean>();
 
   private authService: AuthService;
+  private userService: UserService;
   private _isInitialized = false;
   private _injector: Injector;
 
@@ -98,6 +104,13 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
     super(injector);
     this._injector = injector;
     this.authService = injector.get(AuthService);
+    this.userService = injector.get(UserService);
+
+    this.userService.user$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this._cdr.markForCheck();
+      });
   }
 
 
@@ -123,8 +136,9 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
     if (this.crudDef && this.crudDef.grid) {
       const currentColumns = this.crudDef.grid.displayedColumns;
       const specialColumns = currentColumns.filter(col => col.startsWith('_'));
+      const dataColumns = newDataColumns.filter(col => !col.startsWith('_'));
 
-      const finalDisplayedColumns = [...specialColumns, ...newDataColumns];
+      const finalDisplayedColumns = [...specialColumns, ...dataColumns];
 
       this.crudDef.grid = {
         ...this.crudDef.grid,
@@ -352,11 +366,17 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
       fieldsBehavior: crudDef.forms?.createBehavior,
     };
 
-    if (formDef.initWs?.url) {
-      return this.genericHttpService.basicGet(formDef.initWs.url, null, null, {}).pipe(
-        map((response: any[]) => {
-          const initData = Array.isArray(response) ? response[0] : response;
-          if (initData && formDef.fields) {
+    const initData$ = formDef.initWs?.url
+      ? this.genericHttpService.basicGet(formDef.initWs.url, null, null, {})
+      : of(null);
+
+    return initData$.pipe(
+      map((response: any) => {
+        const initData = Array.isArray(response) ? response[0] : response;
+        const currentUser = this.authService.getUserFromLocalStorage();
+
+        if (formDef.fields) {
+          if (initData) {
             Object.keys(initData).forEach(attribute => {
               const field = formDef.fields?.find(f => f.key === attribute);
               if (field) {
@@ -364,11 +384,43 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
               }
             });
           }
-          return formDef;
-        })
-      );
+
+          formDef.fields.forEach(field => {
+            if (field.fromSession && currentUser && currentUser[field.key] !== undefined) {
+              field.value = currentUser[field.key];
+            }
+          });
+        }
+        return formDef;
+      })
+    );
+  }
+
+  get deniedCreateAlerts(): { messageKey: string; params: any; type: 'info' | 'warning' | 'error' }[] {
+    if (this.showAddButton()) return [];
+    if (!this.crudDef.forms?.create && !this.crudDef.formsDef?.create) return [];
+    return this.getActiveAlerts(this.crudDef.deniedCreateAlerts || []);
+  }
+
+  get generalAlerts(): { messageKey: string; params: any; type: 'info' | 'warning' | 'error' }[] {
+    return this.getActiveAlerts(this.crudDef.alerts || []);
+  }
+
+  private getActiveAlerts(alertDefs: any[]): { messageKey: string; params: any; type: 'info' | 'warning' | 'error' }[] {
+    const user = this.authService.getUserFromLocalStorage();
+    const active: any[] = [];
+    
+    for (const alert of alertDefs) {
+      if (!alert.conditionKey || (user && (user as any)[alert.conditionKey])) {
+        const params = alert.paramKey && user ? { fecha: (user as any)[alert.paramKey] } : null;
+        active.push({ 
+          messageKey: alert.messageKey, 
+          params, 
+          type: alert.type || (alert.messageKey.includes('error') ? 'error' : 'info') 
+        });
+      }
     }
-    return of(formDef);
+    return active;
   }
 
   clone(obj: any): any {

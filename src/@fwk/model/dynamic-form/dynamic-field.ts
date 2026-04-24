@@ -33,6 +33,7 @@ export const IMAGE_PREVIEW = 'IMAGE_PREVIEW';
 export const IMAGE_PREVIEW_SRC = 'IMAGE_PREVIEW_SRC';
 export const DATE_READ = 'DATE_READ';
 export const DATE_TIME_READ = 'DATE_TIME_READ';
+export const ALERT = 'alert';
 
 export enum CONTROL_TYPE {
   DateRead = 'date_read',
@@ -66,7 +67,8 @@ export enum CONTROL_TYPE {
   IconPicker = 'icon-picker',
   ImagePreview = 'image_preview',
   ImagePreviewSrc = 'image_preview_src',
-  Label = 'label'
+  Label = 'label',
+  Alert = 'alert'
 }
 
 
@@ -99,7 +101,8 @@ export enum ControlTypeEnum {
   url_input = 'url_input',
   image_preview = 'image_preview',
   image_preview_src = 'image_preview_src',
-  label = "label"
+  label = "label",
+  alert = "ALERT"
 }
 
 export class DynamicField<T> {
@@ -135,6 +138,7 @@ export class DynamicField<T> {
   showPreview?: boolean;
   icon?: string;
   iconOpenUrl?: string;
+  fromSession?: boolean;
 
   // Deprecated
   type?: string;

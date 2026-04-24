@@ -42,4 +42,18 @@ export class CrudDef extends ComponentDef {
   mockData?: any;
   onAddSuccess?: (entity: any, response: any, injector: Injector) => void;
   onUpdateSuccess?: (entity: any, response: any, injector: Injector) => void;
+
+  deniedCreateAlerts?: {
+    messageKey: string;
+    conditionKey?: string;
+    paramKey?: string;
+    type?: 'info' | 'warning' | 'error';
+  }[];
+
+  alerts?: {
+    messageKey: string;
+    conditionKey?: string;
+    paramKey?: string;
+    type?: 'info' | 'warning' | 'error';
+  }[];
 }

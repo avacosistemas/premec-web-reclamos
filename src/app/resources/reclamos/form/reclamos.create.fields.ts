@@ -1,7 +1,37 @@
-import { DynamicField, AUTOCOMPLETE, AUTOCOMPLETE_DESPLEGABLE, SELECT, TEXTBOX, TEXTAREA, FILE, RADIO_BUTTON } from "@fwk/model/dynamic-form/dynamic-field";
+import { DynamicField, AUTOCOMPLETE, AUTOCOMPLETE_DESPLEGABLE, SELECT, TEXTBOX, TEXTAREA, FILE, RADIO_BUTTON, ALERT } from "@fwk/model/dynamic-form/dynamic-field";
 import { PREFIX_DOMAIN_API } from "environments/environment";
 
 export const RECLAMOS_CREATE_FORM_FIELDS_DEF: DynamicField<any>[] = [
+    {
+        key: 'vencimiento_alerta',
+        controlType: ALERT,
+        options: {
+            type: 'info',
+            appearance: 'soft',
+            showIcon: true,
+            hidden: true
+        },
+        label: '',
+        colSpan: 4
+    },
+    {
+        key: 'maquina_contrato_alerta',
+        controlType: ALERT,
+        options: {
+            type: 'error',
+            appearance: 'soft',
+            showIcon: true,
+            hidden: true
+        },
+        labelKey: 'msg_maquina_sin_contrato_error',
+        colSpan: 4
+    },
+    {
+        key: 'fechaVencimiento',
+        controlType: 'hidden',
+        fromSession: true,
+        colSpan: 0
+    },
     {
         key: 'maquina_tipo',
         controlType: 'hidden',

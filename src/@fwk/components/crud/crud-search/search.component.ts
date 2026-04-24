@@ -20,7 +20,7 @@ import { TranslatePipe } from '../../../pipe/translate.pipe';
 import { I18n } from '../../../model/i18n';
 
 @Component({
-   selector: 'fwk-search',
+  selector: 'fwk-search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss'],
   standalone: true,
@@ -93,7 +93,7 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
       this.onInit();
       this.updateActiveFilterCount();
 
-      this.initialDisplayableColumns = [...this.displayedColumns];
+      this.initialDisplayableColumns = this.displayedColumns.filter(col => !col.startsWith('_'));
       this.buildMenuColumns();
       this.initializeColumnVisibility();
     } else {
@@ -175,12 +175,14 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
     this.fieldsOptions = this.cacheFields.filter(f => !f.options?.baseFilter);
 
     this.fieldsOptions.forEach(field => {
-        if (field.colSpan === undefined || field.colSpan === null) {
-            field.colSpan = 1;
-        }
+      if (field.colSpan === undefined || field.colSpan === null) {
+        field.colSpan = 1;
+      }
     });
 
-    this.visibleGeneralFields = this.generalFields.filter(field =>
+    this.visibleGeneralFields = this.generalFields;
+
+    this.hasVisibleFields = this.generalFields.some(field =>
       field.controlType !== 'hidden' && !field.options?.hidden
     );
 
@@ -189,8 +191,6 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
         field.colSpan = 1;
       }
     });
-
-    this.hasVisibleFields = this.visibleGeneralFields.length > 0;
 
     if (!this.title) {
       this.title = this.translate('search_title');
@@ -233,11 +233,36 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
     this.onSubmitSearch();
   }
 
+  resetToDefaults(): void {
+    const defaults = this.formService.getEntityFromFields(this.cacheFields);
+    const subForm = this.form.get('subForm');
+    if (subForm) {
+      subForm.reset(defaults, { emitEvent: false });
+    } else {
+      this.form.reset(defaults, { emitEvent: false });
+    }
+    this.entity = { ...defaults };
+    this.updateActiveFilterCount();
+  }
+
+  patchValue(entity: any): void {
+    if (!entity) return;
+    const subForm = this.form.get('subForm');
+    if (subForm) {
+      subForm.patchValue(entity, { emitEvent: false });
+    } else {
+      this.form.patchValue(entity, { emitEvent: false });
+    }
+    this.entity = { ...this.entity, ...entity };
+    this.updateActiveFilterCount();
+    this._cdr.markForCheck();
+  }
+
   onSubmitSearch(): void {
     const subForm = this.form.get('subForm') as FormGroup;
-    
+
     if (subForm) {
-      this.entity = this.formService.injectToEntity(this.entity, subForm, this.fields);
+      this.entity = { ...this.entity, ...this.formService.injectToEntity({}, subForm, this.visibleGeneralFields) };
     }
 
     if (!this.firstSubmitForced) {

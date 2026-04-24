@@ -194,7 +194,8 @@ export class AuthService implements AbstractAuthService {
             permisos: permisosProcesados,
             refreshToken: refreshTokenValue || accessToken,
             username: loginUsername,
-            passwordExpired: responseFromApi.passwordExpired ?? storedUser?.passwordExpired
+            passwordExpired: responseFromApi.passwordExpired ?? storedUser?.passwordExpired,
+            fechaVencimiento: responseFromApi.fechaVencimiento
         };
 
         this.setToken(accessToken);

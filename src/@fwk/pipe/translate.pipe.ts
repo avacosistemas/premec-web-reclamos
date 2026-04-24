@@ -10,6 +10,7 @@ export class TranslatePipe implements PipeTransform {
   private i18nService = inject(I18nService);
 
   transform(key: string, args?: any, dictionaryName: string = 'app'): string {
+    if (!key) return '';
     let params: any = {};
     let targetDictionary = dictionaryName;
 
@@ -23,7 +24,14 @@ export class TranslatePipe implements PipeTransform {
 
     if (params && translation) {
       Object.keys(params).forEach(paramKey => {
-        const value = params[paramKey];
+        let value = params[paramKey];
+        
+        const isoDateRegExp = /^\d{4}-\d{2}-\d{2}$/;
+        if (typeof value === 'string' && isoDateRegExp.test(value)) {
+            const parts = value.split('-');
+            value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+
         const regex = new RegExp(`{{${paramKey}}}|{${paramKey}}`, 'g');
         translation = translation.replace(regex, value);
       });

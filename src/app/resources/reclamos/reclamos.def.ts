@@ -34,12 +34,16 @@ export const RECLAMOS_DEF: CrudDef = {
         filter: RECLAMOS_FILTER_FORM_FIELDS_DEF,
         create: RECLAMOS_CREATE_FORM_FIELDS_DEF,
         createBehavior: RECLAMOS_CREATE_BEHAVIOR_DEF,
-        // update: RECLAMOS_UPDATE_FORM_FIELDS_DEF,
-        // read: RECLAMOS_READ_FORM_FIELDS_DEF
     },
     security: {
         createAccess: 'AGREGAR_RECLAMO'
     },
+    deniedCreateAlerts: [
+        {
+            messageKey: 'create_access_denied_message',
+            type: 'warning'
+        },
+    ],
     navigation: RECLAMOS_NAV_DEF,
     filterInMemory: true,
     serverPagination: false,
@@ -66,5 +70,5 @@ export const RECLAMOS_DEF: CrudDef = {
                 }
             });
         }
-    }
+    },
 };

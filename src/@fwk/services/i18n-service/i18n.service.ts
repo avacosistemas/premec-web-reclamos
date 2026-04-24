@@ -1,4 +1,4 @@
-﻿import { Injectable, Injector, inject } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { BaseService } from '../base-service/base.service';
 import { I18n } from '../../model/i18n';
@@ -16,11 +16,22 @@ export class I18nService extends BaseService {
     }
 
     translate(key: string, dictionaryName: string = 'app'): string {
+        if (!key) return '';
         const dict = this.getDictionary(dictionaryName);
         let translation = dict?.translate?.(key);
 
         if (!translation || translation === key) {
             translation = this.getDictionary('fwk')?.translate?.(key);
+        }
+
+        if (!translation || translation === key) {
+            for (const dict of this.dictionaries.values()) {
+                const t = dict.translate?.(key);
+                if (t && t !== key) {
+                    translation = t;
+                    break;
+                }
+            }
         }
 
         const result = translation || key;

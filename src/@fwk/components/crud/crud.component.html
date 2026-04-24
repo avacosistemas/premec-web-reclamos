@@ -1,7 +1,8 @@
-﻿<div class="flex flex-col flex-auto min-w-0" *ngIf="crudDef && name">
+<div class="flex flex-col flex-auto min-w-0" *ngIf="crudDef && name">
     <div class="flex flex-col items-center justify-center border-b bg-card dark:bg-transparent ">
-        <div class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-4 sm:px-6 pt-2 w-full">
+        <div class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-4 sm:px-6 pt-0 w-full">
             <div class="flex-1 min-w-0">
+                <fwk-breadcrumb></fwk-breadcrumb>
                 <div class="flex items-center gap-2">
                     <div class="text-3xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                         {{ crudDef.i18n?.words?.['page_title'] || ('page_title_default' | translate) }}
@@ -64,14 +65,19 @@
                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                     <span class="ml-2">{{ 'add_button' | translate:crudDef.i18n?.name }}</span>
                 </button>
-
-                <div *ngIf="!showAddButton() && (crudDef.forms?.create || crudDef.formsDef?.create)"
-                    class="ml-2 px-4 py-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-md text-sm flex items-center max-w-64">
-                    <mat-icon [svgIcon]="'heroicons_outline:information-circle'"
-                        class="icon-size-5 mr-2 text-amber-500"></mat-icon>
-                    <span>{{ 'create_access_denied_message' | translate:crudDef.i18n?.name }}</span>
-                </div>
             </div>
+        </div>
+
+        <div class="flex flex-col gap-2 w-full p-4 sm:px-6 pt-0">
+            <fuse-alert *ngFor="let alert of deniedCreateAlerts"
+                class="max-w-full" [type]="alert.type" [appearance]="'soft'" [showIcon]="true">
+                {{ alert.messageKey | translate:alert.params:crudDef.i18n?.name }}
+            </fuse-alert>
+
+            <fuse-alert *ngFor="let alert of generalAlerts"
+                class="max-w-full" [type]="alert.type" [appearance]="'soft'" [showIcon]="true">
+                {{ alert.messageKey | translate:alert.params:crudDef.i18n?.name }}
+            </fuse-alert>
         </div>
 
         <div *ngIf="crudDef.forms?.filter" class="w-full print:hidden">

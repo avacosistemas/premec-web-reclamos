@@ -24,6 +24,7 @@ import { DynamicField, CONTROL_TYPE } from '../../model/dynamic-form/dynamic-fie
 import { MY_FORMATS } from '@fwk/services/dynamic-form/form.validator.service';
 import { AutocompleteService } from '../autocomplete/autocomplete.service';
 import { ApiAutocompleteConfiguration } from '../autocomplete/autocomplete.interface';
+import { TranslatePipe } from '../../pipe/translate.pipe';
 import { ColorPickerConfiguration } from '../color-picker/color-picker.interface';
 import { ColorPickerOptions, SelectOptions } from '../../model/dynamic-form/dynamic-field-options.interface';
 import { MatIconModule } from '@angular/material/icon';
@@ -75,7 +76,8 @@ import { HtmlEditorComponent } from '../html-editor/html-editor.component';
         UrlInputComponent,
         IconPickerComponent,
         HtmlEditorComponent,
-        FuseAlertComponent
+        FuseAlertComponent,
+        TranslatePipe
     ],
 
 
@@ -125,6 +127,11 @@ export class DynamicFormComponent extends AbstractComponent implements OnInit, O
 
     override ngOnInit(): void {
         super.ngOnInit();
+        this.fieldSubscriptions.push(
+            this.onFieldsChanges.subscribe(() => {
+                this.cdRef.markForCheck();
+            })
+        );
         if (!this.parentForm) {
             console.error("[FWK] DynamicFormComponent requiere un [parentForm] de tipo FormGroup.");
             this.parentForm = new FormGroup({});
@@ -149,10 +156,10 @@ export class DynamicFormComponent extends AbstractComponent implements OnInit, O
 
         this.fields.forEach(field => {
             if (field.controlType === 'datetimepicker') {
-                field.options = { ...field.options, withHourAndMin: true };
+                field.options = { ...field.options, withHourAndMin: true } as any;
             }
             if (field.controlType === 'timepicker') {
-                field.options = { ...field.options, withHourAndMin: true, format: 'HH:mm:ss' };
+                field.options = { ...field.options, withHourAndMin: true, format: 'HH:mm:ss' } as any;
             }
         });
 

@@ -1,4 +1,4 @@
-﻿import { Directive, Injector, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Directive, Injector, OnInit, OnDestroy, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { FormGroup } from '@angular/forms';
 import { ActivatedRoute, Params } from '@angular/router';
@@ -24,7 +24,7 @@ import { GridDef } from '@fwk/model/component-def/grid-def';
 import { Entity } from '@fwk/model/entity';
 
 @Directive()
-export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>> extends AbstractComponent implements OnInit, OnDestroy {
+export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>> extends AbstractComponent implements OnInit, OnDestroy, AfterViewInit {
 
     entity!: E;
     entities: E[] = [];
@@ -79,43 +79,82 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
     abstract newObjectEntity(): E;
     abstract getCRUDName(): string;
 
+    private _isSubscribedToQueryParams = false;
+
     override ngOnInit(): void {
         super.ngOnInit();
-        this.activatedRoute.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
 
-            const queryParams = { ...params };
-            this.parentTitle = queryParams['parentTitle'] || null;
-            delete queryParams['parentTitle'];
-
-            this.filterEntity = {};
-
+        if (this._isSubscribedToQueryParams) {
             if (this.crudDef) {
-                this.applyParamsToFilter(queryParams, this.crudDef);
+                this._applyFiltersFromParams(this.activatedRoute.snapshot.queryParams);
+            }
+            return;
+        }
 
-                const hasUrlFilters = Object.keys(this.filterEntity).some(key =>
-                    this.filterEntity[key] !== null &&
-                    this.filterEntity[key] !== undefined &&
-                    this.filterEntity[key] !== ''
-                );
+        this._isSubscribedToQueryParams = true;
+        this.activatedRoute.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+            this._applyFiltersFromParams(params);
+        });
+    }
 
-                const searchComp = (this as any).searchComponent;
-                if (searchComp) {
-                    searchComp.entity = { ...this.filterEntity };
+    private _applyFiltersFromParams(params: Params): void {
+        const queryParams = { ...params };
+        this.parentTitle = queryParams['parentTitle'] || null;
+        delete queryParams['parentTitle'];
+
+        this.filterEntity = {};
+
+        if (this.crudDef) {
+            this.applyParamsToFilter(queryParams, this.crudDef);
+
+            const hasUrlFilters = Object.keys(this.filterEntity).some(key =>
+                this.filterEntity[key] !== null &&
+                this.filterEntity[key] !== undefined &&
+                this.filterEntity[key] !== ''
+            );
+
+            const searchComp = (this as any).searchComponent;
+            if (searchComp) {
+                if (typeof searchComp.resetToDefaults === 'function') {
+                    searchComp.resetToDefaults();
+                }
+
+                if (typeof searchComp.patchValue === 'function') {
+                    searchComp.patchValue(this.filterEntity);
+                } else if (searchComp.form) {
                     searchComp.form.patchValue(this.filterEntity, { emitEvent: false });
+                    searchComp.entity = { ...searchComp.entity, ...this.filterEntity };
                     searchComp.updateActiveFilterCount();
                 }
-
-                const hasFilterComponent = !!(this.crudDef.forms?.filter || this.crudDef.formsDef?.filter);
-
-                if (!this.searchPerformed && hasFilterComponent) {
-                    return;
-                }
-
-                if (!this.crudDef.cancelInitSearch || hasUrlFilters) {
-                    this.findAll();
-                }
+                this._cdr.markForCheck();
             }
-        });
+
+            const hasFilterComponent = !!(this.crudDef.forms?.filter || this.crudDef.formsDef?.filter);
+
+            const shouldSearch = hasUrlFilters || !this.crudDef.cancelInitSearch;
+
+            if (shouldSearch) {
+                this.findAll();
+            }
+        }
+    }
+
+    ngAfterViewInit(): void {
+        if (this.filterEntity && Object.keys(this.filterEntity).length > 0) {
+            const searchComp = (this as any).searchComponent;
+            if (searchComp) {
+                if (typeof searchComp.patchValue === 'function') {
+                    searchComp.patchValue(this.filterEntity);
+                } else {
+                    searchComp.entity = { ...this.filterEntity };
+                    if (searchComp.form) {
+                        searchComp.form.patchValue(this.filterEntity, { emitEvent: false });
+                        searchComp.updateActiveFilterCount();
+                    }
+                }
+                this._cdr.markForCheck();
+            }
+        }
     }
 
     override ngOnDestroy(): void {
@@ -130,7 +169,6 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
             filterFields.forEach(field => {
                 if (params[field.key] !== undefined) {
                     this.filterEntity[field.key] = params[field.key];
-                    field.value = params[field.key];
                 }
             });
         }
@@ -139,6 +177,10 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
     public setUpCRUDDef(def: CrudDef): void {
         this.crudDef = def;
         this.name = def.name;
+
+        if (def.i18n) {
+            this.setUpI18n(def.i18n);
+        }
 
         if (this.crudDef.ws && this.crudDef.ws.url) {
             this.crudService.setBaseURL(this.crudDef.ws.url);
@@ -333,7 +375,24 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
     filterSearchEntity(filterEntity: any): void {
         this.filterEntity = filterEntity;
         if (this.crudDef.pagination) { this.crudDef.pagination.page = 0; }
-        this.findAll();
+
+        const queryParams = { ...filterEntity };
+        if (this.parentTitle) {
+            queryParams['parentTitle'] = this.parentTitle;
+        }
+
+        Object.keys(queryParams).forEach(key => {
+            if (queryParams[key] === null || queryParams[key] === undefined || queryParams[key] === '') {
+                queryParams[key] = null;
+            }
+        });
+
+        this.router.navigate([], {
+            relativeTo: this.activatedRoute,
+            queryParams: queryParams,
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+        });
     }
 
     override translate(key: string): string {

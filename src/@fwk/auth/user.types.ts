@@ -8,4 +8,5 @@ export interface User {
     refreshToken?: string;
     passwordExpired?: boolean;
     username?: string;
+    fechaVencimiento?: string;
 }

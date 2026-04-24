@@ -1,7 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { from, Observable, ReplaySubject, of } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
-import { FuseNavigationItem } from '@fuse/components/navigation';
+import { filter, switchMap, tap } from 'rxjs/operators';
+import { NavigationEnd, Router } from '@angular/router';
+import { FuseNavigationItem, FuseNavigationService } from '@fuse/components/navigation';
 import { CrudDef } from '@fwk/model/component-def/crud-def';
 import { Navigation, NavigationGroup } from './navigation.types';
 import { FWK_CRUD_MODULES_LOADER, FWK_NAVIGATION_GROUPS } from './navigation.tokens';
@@ -18,12 +19,30 @@ export class NavigationService {
     private crudModulesLoader = inject(FWK_CRUD_MODULES_LOADER);
     private navigationGroups = inject(FWK_NAVIGATION_GROUPS);
     private authService = inject(AbstractAuthService);
+    private router = inject(Router);
+    private _fuseNavigationService = inject(FuseNavigationService);
+
+    private _allCrudDefs: CrudDef[] = [];
+    private _currentNavigation: Navigation | null = null;
+    private _routerSubscription: any;
 
     get navigation$(): Observable<Navigation> {
         return this._navigation.asObservable();
     }
 
+    get allCrudDefs(): CrudDef[] {
+        return this._allCrudDefs;
+    }
+
     get(): Observable<Navigation> {
+        if (!this._routerSubscription) {
+            this._routerSubscription = this.router.events.pipe(
+                filter(event => event instanceof NavigationEnd)
+            ).subscribe(() => {
+                this._updateActiveItemId();
+            });
+        }
+
         return from(this.buildDynamicNavigation()).pipe(
             switchMap(dynamicDefaultNav => {
                 const navigationData: Navigation = {
@@ -32,6 +51,8 @@ export class NavigationService {
                     futuristic: [],
                     horizontal: [],
                 };
+                this._currentNavigation = navigationData;
+                this._updateActiveItemId();
                 return of(navigationData);
             }),
             tap((navigation) => {
@@ -80,6 +101,7 @@ export class NavigationService {
 
     private async buildDynamicNavigation(): Promise<FuseNavigationItem[]> {
         const crudDefs = await this.loadAllCrudDefs();
+        this._allCrudDefs = crudDefs;
 
         const menuGeneralGroup: ExtendedNavigationItem = {
             id: 'menu-general',
@@ -90,15 +112,15 @@ export class NavigationService {
         };
 
         const collapsibleMenus = new Map<string, ExtendedNavigationItem>();
-        
-          this.navigationGroups.forEach((groupDef: NavigationGroup) => {
+
+        this.navigationGroups.forEach((groupDef: NavigationGroup) => {
             collapsibleMenus.set(groupDef.id, {
                 id: groupDef.id,
                 title: groupDef.title,
-                type: groupDef.type || 'collapsable', 
+                type: groupDef.type || 'collapsable',
                 icon: groupDef.icon,
                 children: [],
-                order: (groupDef as any).order 
+                order: (groupDef as any).order
             });
         });
 
@@ -176,5 +198,108 @@ export class NavigationService {
         rootItems.sort(this.sortNavigationItems);
 
         return rootItems;
+    }
+
+    private _updateActiveItemId() {
+        if (!this._currentNavigation) return;
+
+        const url = this.router.url;
+        const urlWithoutParams = url.split('?')[0].split('#')[0];
+
+        const activeNavDef = this._allCrudDefs
+            .map(d => d.navigation)
+            .filter(n => !!n)
+            .find(n => {
+                if (!n.url) return false;
+                const navUrlWithoutParams = n.url.split('?')[0].split('#')[0];
+                return urlWithoutParams === navUrlWithoutParams || urlWithoutParams.startsWith(navUrlWithoutParams + '/');
+            });
+
+        this._resetActiveForced(this._currentNavigation.default);
+        this._resetActiveForced(this._currentNavigation.compact);
+        this._resetActiveForced(this._currentNavigation.futuristic);
+        this._resetActiveForced(this._currentNavigation.horizontal);
+
+        if (activeNavDef?.activeItemId) {
+            this._setActiveById(this._currentNavigation.default, activeNavDef.activeItemId);
+            this._setActiveById(this._currentNavigation.compact, activeNavDef.activeItemId);
+            this._setActiveById(this._currentNavigation.futuristic, activeNavDef.activeItemId);
+            this._setActiveById(this._currentNavigation.horizontal, activeNavDef.activeItemId);
+        }
+
+        this._navigation.next({
+            default: [...(this._currentNavigation.default || [])],
+            compact: [...(this._currentNavigation.compact || [])],
+            futuristic: [...(this._currentNavigation.futuristic || [])],
+            horizontal: [...(this._currentNavigation.horizontal || [])]
+        });
+
+    this._refreshFuseNavigation();
+    }
+
+    public getCrudDefByUrl(url: string): CrudDef | undefined {
+        const urlWithoutParams = url.split('?')[0].split('#')[0].toLowerCase();
+        
+        const matches = this._allCrudDefs.filter(d => {
+            if (!d.navigation?.url) return false;
+            const navUrlWithoutParams = d.navigation.url.split('?')[0].split('#')[0].toLowerCase();
+            return urlWithoutParams === navUrlWithoutParams || urlWithoutParams.startsWith(navUrlWithoutParams + '/');
+        });
+
+        if (matches.length === 0) return undefined;
+
+        return matches.reduce((prev, curr) => {
+            const prevUrl = prev.navigation?.url || '';
+            const currUrl = curr.navigation?.url || '';
+            return currUrl.length > prevUrl.length ? curr : prev;
+        });
+    }
+
+    public getNavigationItemByUrl(url: string, items?: FuseNavigationItem[]): FuseNavigationItem | undefined {
+        const navigationItems = items || this._currentNavigation?.default || [];
+        const urlWithoutParams = url.split('?')[0].toLowerCase();
+
+        for (const item of navigationItems) {
+            if (item.link) {
+                const itemLink = item.link.split('?')[0].toLowerCase();
+                if (itemLink === urlWithoutParams) {
+                    return item;
+                }
+            }
+            if (item.children) {
+                const found = this.getNavigationItemByUrl(url, item.children);
+                if (found) return found;
+            }
+        }
+        return undefined;
+    }
+
+    private _refreshFuseNavigation() {
+        ['mainNavigation', 'default', 'compact', 'futuristic', 'horizontal'].forEach(name => {
+            const component = this._fuseNavigationService.getComponent<any>(name);
+            if (component && typeof component.refresh === 'function') {
+                component.refresh();
+            }
+        });
+    }
+
+    private _resetActiveForced(items: FuseNavigationItem[]) {
+        items.forEach(item => {
+            item.active = false;
+            if (item.children) {
+                this._resetActiveForced(item.children);
+            }
+        });
+    }
+
+    private _setActiveById(items: FuseNavigationItem[], id: string) {
+        items.forEach(item => {
+            if (item.id === id) {
+                item.active = true;
+            }
+            if (item.children) {
+                this._setActiveById(item.children, id);
+            }
+        });
     }
 }

@@ -11,4 +11,5 @@
     group?: string; 
     showInMenu?: boolean;
     order?: number;
+    activeItemId?: string;
 }
