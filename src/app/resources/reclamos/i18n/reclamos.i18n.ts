@@ -52,7 +52,7 @@ export const RECLAMOS_I18N_DEF: I18n = {
         'msg_prioridad_alta': 'Dado que el equipo no se encuentra en funcionamiento, atenderemos tu reclamo en las próximas 48 hs, o en 24 hs únicamente cuando así lo establezca el contrato',
         'create_access_denied_message': 'Para poder generar el reclamo, es necesario que la situación del usuario esté regularizada. En este momento, el usuario se encuentra registrado como inactivo por el área administrativa-comercial-técnica. Te sugerimos comunicarte a ventas@premecsa.com.ar a la brevedad, para que juntos podamos resolver esta situación y dar curso al reclamo.',
         'maquina_sin_tipo_error': 'No es posible determinar el tipo de máquina seleccionada. Por favor, póngase en contacto con Premec',
-        'msg_vencimiento_factura_warning': 'Recordá que tu proxima factura vence el {{fecha}}',
+        'msg_vencimiento_factura_warning': 'Le informamos que el día {{fecha}} su cuenta registrará vencimientos pendientes de regularización. Agradeceremos su gestión.',
         'msg_vencimiento_factura_error': 'Tu factura venció el {{fecha}}. Por favor regularizá tu situación.',
         'msg_maquina_sin_contrato_error': 'Para poder generar el reclamo en este equipo, es necesario que cuente con un contrato vigente. En este momento, el contrato no se encuentra activo, por lo que lo invitamos a comunicarse con el área comercial a ventas@premecsa.com.ar a la brevedad, con el fin de regularizar la situación y dar continuidad al servicio.',
         'msg_vencimiento_factura_info': 'Le informamos que el día {{fecha}} su cuenta registrará vencimientos pendientes de regularización. Agradeceremos su gestión.'
