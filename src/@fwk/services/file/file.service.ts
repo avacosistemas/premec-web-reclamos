@@ -32,20 +32,100 @@ export class FileService {
         console.error("Acción de descarga no tiene una definición de Web Service (ws).", action);
         return of(undefined);
     }
-    const ws = this.localStorageService.clone(action.ws);
-    ws.method = HTTP_METHODS.get;
 
-    return this.genericHttpService.callWs(ws, entity).pipe(
-      map((response: any) => {
-        if (Array.isArray(response) && response.length > 0) {
-          return response[0];
+    const ws = this.localStorageService.clone(action.ws);
+
+    let url = ws.url || '';
+    if (url && entity) {
+      Object.keys(entity).forEach(key => {
+        const value = entity[key] !== undefined && entity[key] !== null ? entity[key] : '';
+        const regex = new RegExp(`\\{\\{${key}\\}\\}|\\{${key}\\}`, 'g');
+        url = url.replace(regex, String(value));
+      });
+    }
+
+    const queryParams: string[] = [];
+    if (ws.querystring && entity) {
+      Object.keys(ws.querystring).forEach(key => {
+        const entityKey = ws.querystring![key];
+        if (entity[entityKey] !== undefined && entity[entityKey] !== null) {
+          queryParams.push(`${encodeURIComponent(key)}=${encodeURIComponent(entity[entityKey])}`);
         }
-        return response;
-      }),
-      tap((fileEntity: FileEntity) => this.downloadFileOctectStream(fileEntity)),
-      map(() => undefined),
-      catchError(error => throwError(() => error))
-    );
+      });
+    }
+
+    if (queryParams.length > 0) {
+      url += (url.includes('?') ? '&' : '?') + queryParams.join('&');
+    }
+
+    let filename = '';
+    if (action.fileName) {
+      filename = action.fileName;
+      if (entity) {
+        Object.keys(entity).forEach(key => {
+          const value = entity[key] !== undefined && entity[key] !== null ? entity[key] : '';
+          const regex = new RegExp(`\\{\\{${key}\\}\\}|\\{${key}\\}`, 'g');
+          filename = filename.replace(regex, String(value));
+        });
+      }
+    }
+
+    return new Observable<void>(observer => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          const raw = xhr.responseText;
+          let base64 = '';
+          let name = filename || 'download';
+
+          try {
+            const json = JSON.parse(raw);
+            base64 = json[ws.key] || json['data'] || '';
+          } catch (_) {
+            base64 = raw;
+          }
+
+          if (!base64) {
+            observer.error(new Error('No se encontró contenido para descargar en la respuesta'));
+            return;
+          }
+
+          const decodedData = atob(base64);
+          const byteNumbers = new Array(decodedData.length);
+          for (let i = 0; i < decodedData.length; i++) {
+            byteNumbers[i] = decodedData.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const ext = name.split('.').pop()?.toLowerCase() || '';
+          const mimeTypes: { [key: string]: string } = {
+            jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+            gif: 'image/gif', pdf: 'application/pdf',
+          };
+          const mime = mimeTypes[ext] || 'application/octet-stream';
+          const blob = new Blob([byteArray], { type: mime });
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(blobUrl);
+          observer.next();
+          observer.complete();
+        } else {
+          observer.error(new Error(`HTTP ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = function () {
+        observer.error(new Error('Error de red al descargar el archivo'));
+      };
+
+      xhr.send();
+    });
   }
 
   previewFileByAction(action: ActionDef, entity: Record<string, any>): Observable<void> {

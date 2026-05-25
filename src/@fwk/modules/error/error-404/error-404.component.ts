@@ -22,6 +22,6 @@ export class Error404Component {
     }
 
     goHome(): void {
-        this._router.navigate(['/example']);
+        this._router.navigate(['/']);
     }
 }

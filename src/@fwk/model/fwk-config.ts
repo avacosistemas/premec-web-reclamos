@@ -13,6 +13,12 @@ export interface FwkConfig {
     sidebarOpened?: boolean;
     signInWelcomeSubtitle?: string;
     urlToRedirectOnLogout?: string;
+    logoConfig?: {
+        showName?: boolean;
+        containerClass?: string;
+        imgClass?: string;
+        nameClass?: string;
+    };
 }
 
 export const DEFAULT_FWK_CONFIG: FwkConfig = {

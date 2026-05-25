@@ -1,6 +1,4 @@
 import { GridDef } from "@fwk/model/component-def/grid-def";
-import { RECLAMOS_UPDATE_FORM_FIELDS_DEF } from "../form/reclamos.update.fields";
-import { FILTER_TYPE } from "@fwk/services/filter-service/filter.service";
 
 export const RECLAMOS_GRID_DEF: GridDef = {
     columnsDef: [
@@ -45,19 +43,20 @@ export const RECLAMOS_GRID_DEF: GridDef = {
 
     displayedColumns: ['serviceCallID', 'estadoReclamo', 'asunto', 'internalSN', 'fechaCreacion', 'fechaInicioActividad', 'fechaFinActividad', 'motivoRechazo'],
     actions: [
-        // {
-        //     actionNameKey: 'action_editar',
-        //     actionType: 'form_modal',
-        //     icon: 'heroicons_outline:pencil-square',
-        //     form: RECLAMOS_UPDATE_FORM_FIELDS_DEF
-        // }
-    ],
-    displayedActionsCondition: [
         {
-            key: 'action_editar',
-            expression: { key: 'estadoReclamo', compare: FILTER_TYPE.NOTEQUALS, value: 'Cerrado' }
-        }
+            actionNameKey: 'action_actividades',
+            actionType: 'redirect',
+            icon: 'heroicons_outline:clipboard-document-list',
+            redirect: {
+                url: '/actividades',
+                querystring: {
+                    idServiceCall: 'serviceCallID',
+                    parentTitle: 'asunto'
+                }
+            }
+        },
     ],
+    displayedActionsCondition: [],
     groupActions: false,
     sortAllColumns: true
 };

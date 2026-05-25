@@ -3,7 +3,7 @@ import { ActionDef } from './action-def';
 import { DynamicFieldConditionIf } from '../dynamic-form/dynamic-field-condition-if';
 
 export class GridDef {
-    columnsDef: ColumnDef[];
+    columnsDef!: ColumnDef[];
     displayedColumns!: string[];
     displayedColumnsCondition?: DisplayCondition[];
     displayedActionsCondition?: DisplayCondition[];

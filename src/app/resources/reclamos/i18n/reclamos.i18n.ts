@@ -5,6 +5,7 @@ export const RECLAMOS_I18N_DEF: I18n = {
     lang: 'es',
     words: {
         'page_title': 'Gestión de Reclamos',
+        'page_title_reclamos': 'Gestión de Reclamos',
         'cl_id': 'ID',
         'cl_numero': 'Número',
         'cl_asunto': 'Asunto',
@@ -34,6 +35,7 @@ export const RECLAMOS_I18N_DEF: I18n = {
         'action_ver': 'Ver',
         'action_editar': 'Editar',
         'action_detalle': 'Ver Detalle',
+        'action_actividades': 'Actividades',
         'add_button': 'Nuevo Reclamo',
         'create_reclamo_title': 'Cargar Reclamo',
         'edit_reclamo_title': 'Actualizar Reclamo',

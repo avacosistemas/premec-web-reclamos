@@ -7,6 +7,7 @@ import { CrudDef } from '@fwk/model/component-def/crud-def';
 import { Navigation, NavigationGroup } from './navigation.types';
 import { FWK_CRUD_MODULES_LOADER, FWK_NAVIGATION_GROUPS } from './navigation.tokens';
 import { AbstractAuthService } from '@fwk/auth/abstract-auth.service';
+import { I18nService } from '@fwk/services/i18n-service/i18n.service';
 
 interface ExtendedNavigationItem extends FuseNavigationItem {
     order?: number;
@@ -21,10 +22,17 @@ export class NavigationService {
     private authService = inject(AbstractAuthService);
     private router = inject(Router);
     private _fuseNavigationService = inject(FuseNavigationService);
+    private i18nService = inject(I18nService);
 
     private _allCrudDefs: CrudDef[] = [];
     private _currentNavigation: Navigation | null = null;
     private _routerSubscription: any;
+    private _loadingPromise: Promise<Navigation> | null = null;
+
+    private _authSubscription = this.authService.authenticated$.subscribe(() => {
+        this._currentNavigation = null;
+        this._loadingPromise = null;
+    });
 
     get navigation$(): Observable<Navigation> {
         return this._navigation.asObservable();
@@ -43,22 +51,35 @@ export class NavigationService {
             });
         }
 
-        return from(this.buildDynamicNavigation()).pipe(
-            switchMap(dynamicDefaultNav => {
-                const navigationData: Navigation = {
-                    compact: [],
-                    default: dynamicDefaultNav,
-                    futuristic: [],
-                    horizontal: [],
-                };
-                this._currentNavigation = navigationData;
-                this._updateActiveItemId();
-                return of(navigationData);
-            }),
-            tap((navigation) => {
-                this._navigation.next(navigation);
-            }),
-        );
+        if (this._currentNavigation) {
+            return of(this._currentNavigation);
+        }
+
+        if (this._loadingPromise) {
+            return from(this._loadingPromise);
+        }
+
+        this._loadingPromise = this.buildDynamicNavigation().then(dynamicDefaultNav => {
+            const navigationData: Navigation = {
+                compact: [],
+                default: dynamicDefaultNav,
+                futuristic: [],
+                horizontal: [],
+            };
+            this._currentNavigation = navigationData;
+            this._updateActiveItemId();
+            this._navigation.next(navigationData);
+            this._loadingPromise = null;
+            return navigationData;
+        });
+
+        return from(this._loadingPromise);
+    }
+
+    refresh(): void {
+        this._currentNavigation = null;
+        this._loadingPromise = null;
+        this.get().subscribe();
     }
 
     private async loadAllCrudDefs(): Promise<CrudDef[]> {
@@ -66,10 +87,18 @@ export class NavigationService {
         const loaderPromises = crudModules.map(moduleDef => moduleDef.loader());
         const loadedModules = await Promise.all(loaderPromises);
 
-        return loadedModules.map(module => {
+        const defs = loadedModules.map(module => {
             const defKey = Object.keys(module).find(key => key.endsWith('_DEF'));
             return defKey ? module[defKey] : null;
         }).filter(Boolean) as CrudDef[];
+
+        defs.forEach(def => {
+            if (def.i18n) {
+                this.i18nService.addI18n(def.i18n);
+            }
+        });
+
+        return defs;
     }
 
     private sortNavigationItems = (a: ExtendedNavigationItem, b: ExtendedNavigationItem): number => {

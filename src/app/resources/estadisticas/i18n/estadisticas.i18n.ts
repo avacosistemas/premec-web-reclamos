@@ -1,0 +1,27 @@
+export const ESTADISTICAS_I18N_DEF = {
+    name: 'ESTADISTICAS',
+    lang: 'es',
+    words: {
+        page_title: 'Estadísticas',
+        nav_estadisticas: 'Estadísticas',
+        es_maquina: 'Máquina',
+        es_anio: 'Año',
+        es_meses: 'Meses',
+        es_btn_ver_resultados: 'Ver Resultados',
+        es_btn_limpiar: 'Limpiar',
+        es_card_maquina: 'Máquina',
+        es_card_dias_detenida: 'Días detenida',
+        es_card_reclamos: 'Reclamos asociados',
+        es_detenida: 'Detenida',
+        es_reclamos: 'Reclamos',
+        es_error_maquina_required: 'Debe seleccionar una máquina',
+        es_error_anio_required: 'Debe ingresar un año',
+        es_error_anio_min: 'El año debe ser 2026 o posterior',
+        es_error_anio_max: 'El año no puede ser superior al actual',
+        es_error_meses_required: 'Debe seleccionar al menos un mes',
+        es_loading: 'Cargando...',
+        search_title: 'Búsqueda',
+        search_clear_button: 'Limpiar',
+        search_submit_button: 'Ver Resultados',
+    }
+};

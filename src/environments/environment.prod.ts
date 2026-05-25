@@ -33,13 +33,19 @@ export const environment = {
         appLogoSmall: 'assets/images/logo/logo_premec.png',
         welcomeTitleLine1: 'Gestor de Reclamos',
         welcomeTitleLine2: '',
+        signInWelcomeSubtitle: '¡Bienvenido! Desde aquí podrás gestionar tus reclamos.',
+        urlToRedirectOnLogout: '/sign-in',
         showWelcome: false,
         urlToRedirect: '/reclamos',
         showSearchButton: false,
-        showCollapseSidebarIcon: false,
-        sidebarOpened: false,
-        signInWelcomeSubtitle: '¡Bienvenido! Desde aquí podrás gestionar tus reclamos.',
-        urlToRedirectOnLogout: '/sign-in',
+        showCollapseSidebarIcon: true,
+        sidebarOpened: true,
+        logoConfig: {
+            showName: false,
+            containerClass: 'w-16',
+            imgClass: 'h-10',
+            nameClass: 'text-xl font-bold'
+        }
     },
 
     customRoutes: [

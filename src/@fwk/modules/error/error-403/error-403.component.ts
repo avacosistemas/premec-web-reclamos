@@ -41,6 +41,6 @@ export class Error403Component implements OnInit {
     }
 
     goHome(): void {
-        this._router.navigate(['/example']);
+        this._router.navigate(['/']);
     }
 }

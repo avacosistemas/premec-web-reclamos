@@ -1,5 +1,4 @@
 import { CrudDef } from "@fwk/model/component-def/crud-def";
-import { RECLAMOS_DEF } from "app/resources/reclamos/reclamos.def";
 
 export interface CrudModuleDefinition {
     path: string;
@@ -8,16 +7,26 @@ export interface CrudModuleDefinition {
 
 export const CRUD_MODULES: CrudModuleDefinition[] = [
     {
+        path: 'actividades',
+        loader: () => import('app/resources/actividades/actividades.def')
+    },
+    {
+        path: 'estadisticas',
+        loader: () => import('app/resources/estadisticas/estadisticas.def')
+    },
+    {
         path: 'reclamos',
-        loader: () => Promise.resolve({ RECLAMOS_DEF })
-    }
+        loader: () => import('app/resources/reclamos/reclamos.def')
+    },
 ];
 
 export async function loadAllCrudDefs(): Promise<CrudDef[]> {
-    const loaderPromises: any[] = [
-        Promise.resolve({ RECLAMOS_DEF })
+    const loaderPromises = [
+        import('app/resources/actividades/actividades.def'),
+        import('app/resources/estadisticas/estadisticas.def'),
+        import('app/resources/reclamos/reclamos.def'),
     ];
-
+    
     const loadedModules = await Promise.all(loaderPromises);
 
     return loadedModules.map(module => {
