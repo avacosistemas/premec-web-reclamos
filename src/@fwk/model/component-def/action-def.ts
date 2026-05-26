@@ -36,5 +36,6 @@ export class ActionDef {
   input?: any;
   confirm?: any;
   redirect?: any;
-  formKey?: string; 
+  formKey?: string;
+  fileName?: string;
 }
