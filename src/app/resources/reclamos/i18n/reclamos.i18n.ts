@@ -48,7 +48,7 @@ export const RECLAMOS_I18N_DEF: I18n = {
         'f_prioridad': 'Estado de la máquina',
         'f_prioridad_baja': 'Funciona',
         'f_prioridad_alta': 'No Funciona',
-        'msg_prioridad_baja': 'Tu reclamo será atendido en un plazo de 15 días. De todas formas, en breve recibirás un correo electrónico con la fecha de estimada de visita técnica.',
+        'msg_prioridad_baja': 'Tu reclamo será atendido en un plazo de 15 días. De todas formas, en breve recibirás un correo electrónico con la fecha estimada de visita técnica.',
         'msg_prioridad_alta': 'Dado que el equipo no se encuentra en funcionamiento, atenderemos tu reclamo en las próximas 48 hs, o en 24 hs únicamente cuando así lo establezca el contrato',
         'create_access_denied_message': 'Para poder generar el reclamo, es necesario que la situación del usuario esté regularizada. En este momento, el usuario se encuentra registrado como inactivo por el área administrativa-comercial-técnica. Te sugerimos comunicarte a ventas@premecsa.com.ar a la brevedad, para que juntos podamos resolver esta situación y dar curso al reclamo.',
         'maquina_sin_tipo_error': 'No es posible determinar el tipo de máquina seleccionada. Por favor, póngase en contacto con Premec',
