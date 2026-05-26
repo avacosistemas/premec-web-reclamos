@@ -30,7 +30,7 @@ export const ACTIVIDADES_GRID_DEF: GridDef = {
     displayedActionsCondition: [
         {
             key: 'action_descargar_informe',
-            expression: { key: 'estado', compare: FILTER_TYPE.EQUALS, value: 'Enviado' }
+            expression: { key: 'estado', compare: FILTER_TYPE.EQUALS, value: 'Aprobada' }
         }
     ],
     groupActions: false,

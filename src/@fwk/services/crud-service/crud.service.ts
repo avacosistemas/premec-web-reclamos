@@ -8,7 +8,7 @@ import { FormService } from '../dynamic-form/form.service';
 import { CRUD } from './crud';
 
 export abstract class CrudService<E extends Entity> extends HttpService implements CRUD<E> {
-    
+
     formService: FormService;
 
     constructor(baseURL: string, protected override injector: Injector) {
@@ -55,21 +55,24 @@ export abstract class CrudService<E extends Entity> extends HttpService implemen
                 if (Object.prototype.hasOwnProperty.call(filterEntity, key)) {
                     const value = filterEntity[key];
                     if (value !== null && value !== undefined && value !== '') {
-                        params = params.append(key, value);
-                        hasParams = true;
+                        if (typeof value === 'object' && !Array.isArray(value)) {
+                        } else {
+                            params = params.append(key, value);
+                            hasParams = true;
+                        }
                     }
                 }
             }
         }
-        
+
         return hasParams ? params : null;
     }
-    
+
     getParametersToUrlAndPage(filterEntity: any, page: { page: number, pageSize: number }): HttpParams {
         const params = this.buildHttpParams(filterEntity, page);
         return params ?? new HttpParams();
     }
-    
+
     getParametersToUrl(filterEntity: any): HttpParams {
         const params = this.buildHttpParams(filterEntity, null);
         return params ?? new HttpParams();

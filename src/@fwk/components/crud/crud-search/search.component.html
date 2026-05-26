@@ -19,7 +19,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pb-4">
             <fwk-dynamic-form-component class="col-span-full" [entity]="entity" [isEdit]="true"
-                [fields]="visibleGeneralFields" [parentForm]="form" (onFieldsChanges)="onChangeEntity($event.entity)">
+                [fields]="generalFields" [parentForm]="form" (onFieldsChanges)="onChangeEntity($event.entity)">
             </fwk-dynamic-form-component>
         </div>
 

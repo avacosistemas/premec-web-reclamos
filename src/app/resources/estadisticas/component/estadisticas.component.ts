@@ -74,7 +74,7 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadMaquinas();
-        this.cargarMockData();
+        // this.cargarMockData();
     }
 
     ngOnDestroy(): void {
@@ -174,11 +174,40 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
         this.results = null;
         this.cdr.markForCheck();
 
-        setTimeout(() => {
-            this.results = this.mockStats(idMaquina, this.year, this.selectedMonths);
-            this.loading = false;
-            this.cdr.markForCheck();
-        }, 500);
+        const periodos = this.selectedMonths.map(m => ({
+            anio: this.year,
+            mes: m
+        }));
+
+        this.estadisticasService.getStats(idMaquina, periodos)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (resp) => {
+                    const nombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                    
+                    const mappedMonths = (resp?.periodos || []).map((p: any) => ({
+                        mes: p.mes,
+                        anio: p.anio,
+                        nombre: nombres[p.mes - 1] || `Mes ${p.mes}`,
+                        detenida: p.diasParadaTotal ?? 0,
+                        reclamos: p.cantidadReclamos ?? 0
+                    }));
+
+                    this.results = {
+                        maquina: idMaquina,
+                        diasDetenida: resp?.diasParadaTotalTotal ?? 0,
+                        reclamosAsociados: resp?.cantidadReclamosTotal ?? 0,
+                        meses: mappedMonths
+                    };
+                    this.loading = false;
+                    this.cdr.markForCheck();
+                },
+                error: () => {
+                    this.loading = false;
+                    this.results = null;
+                    this.cdr.markForCheck();
+                }
+            });
     }
 
     limpiar(): void {

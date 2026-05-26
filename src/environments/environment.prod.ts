@@ -41,9 +41,9 @@ export const environment = {
         showCollapseSidebarIcon: true,
         sidebarOpened: true,
         logoConfig: {
-            showName: false,
+            showName: true,
             containerClass: 'w-16',
-            imgClass: 'h-10',
+            imgClass: 'w-10 h-10',
             nameClass: 'text-xl font-bold'
         }
     },
