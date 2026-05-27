@@ -8,6 +8,7 @@ import { MatExpansionPanel, MatExpansionModule } from '@angular/material/expansi
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { ActivatedRoute } from '@angular/router';
 
 import { AbstractComponent } from '../../abstract-component.component';
 import { DynamicField } from '../../../model/dynamic-form/dynamic-field';
@@ -164,6 +165,14 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
 
   onInit() {
     this.form = new FormGroup({});
+    const originalPatchValue = this.form.patchValue.bind(this.form);
+    this.form.patchValue = (value: any, options?: any) => {
+      originalPatchValue(value, options);
+      const subForm = this.form.get('subForm') as FormGroup;
+      if (subForm) {
+        subForm.patchValue(value, options);
+      }
+    };
     this.reInit();
   }
 
@@ -180,23 +189,34 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
       }
     });
 
-    this.visibleGeneralFields = this.generalFields;
-
-    this.hasVisibleFields = this.generalFields.some(field =>
-      field.controlType !== 'hidden' && !field.options?.hidden
-    );
-
-    this.visibleGeneralFields.forEach(field => {
+    this.generalFields.forEach(field => {
       if (field.colSpan === undefined || field.colSpan === null) {
         field.colSpan = 1;
       }
     });
+
+    this.visibleGeneralFields = this.generalFields.filter(field =>
+      field.controlType !== 'hidden' && !field.options?.hidden
+    );
+
+    this.hasVisibleFields = this.visibleGeneralFields.length > 0;
 
     if (!this.title) {
       this.title = this.translate('search_title');
     }
 
     this.entity = this.formService.getEntityFromFields(this.cacheFields);
+
+    const activatedRoute = this.injector.get(ActivatedRoute, null);
+    const queryParams = activatedRoute?.snapshot?.queryParams;
+    if (queryParams) {
+      this.cacheFields.forEach(field => {
+        if (queryParams[field.key] !== undefined && queryParams[field.key] !== null && queryParams[field.key] !== '') {
+          this.entity[field.key] = queryParams[field.key];
+          field.value = queryParams[field.key];
+        }
+      });
+    }
   }
 
   private getGeneralFields(fields: DynamicField<any>[]): DynamicField<any>[] {
@@ -342,8 +362,24 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
       return;
     }
 
+    const transferTargets = new Set<string>();
+    this.fields.forEach(field => {
+      const opts = field.options as any;
+      if (opts?.transferIdToField) {
+        transferTargets.add(opts.transferIdToField);
+      }
+    });
+
     this.activeFilterCount = this.fields.reduce((count, field) => {
       const value = this.entity[field.key];
+
+      if (transferTargets.has(field.key)) {
+        const sourceField = this.fields.find(f => (f.options as any)?.transferIdToField === field.key);
+        const sourceValue = sourceField ? this.entity[sourceField.key] : null;
+        if (sourceValue !== null && sourceValue !== undefined && sourceValue !== '') {
+          return count;
+        }
+      }
 
       if (field.controlType === 'checkbox') {
         if (value === true) {

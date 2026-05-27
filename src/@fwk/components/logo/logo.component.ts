@@ -21,19 +21,27 @@ import { FWK_CONFIG } from '@fwk/model/fwk-config';
 })
 export class LogoComponent {
     public fwkConfig = inject(FWK_CONFIG);
-    
-    @Input() size: 'normal' | 'small' = 'normal';
-    @Input() showName: boolean;
 
-    @Input() containerClass: string;
-    @Input() imgClass: string;
-    @Input() nameClass: string;
+    @Input() size: 'normal' | 'small' = 'normal';
+    @Input() type: 'normal' | 'icon' = 'normal';
+    @Input() showName?: boolean;
+
+    @Input() containerClass?: string;
+    @Input() imgClass?: string;
+    @Input() nameClass?: string;
 
     get finalShowName(): boolean {
+        if (this.type === "icon") {
+            return false;
+        }
+
         return this.showName ?? this.fwkConfig.logoConfig?.showName ?? false;
     }
 
     get finalContainerClass(): string {
+        if (this.type === "icon") {
+            return '';
+        }
         return this.containerClass ?? this.fwkConfig.logoConfig?.containerClass ?? '';
     }
 
@@ -46,8 +54,8 @@ export class LogoComponent {
     }
 
     get logoUrl(): string {
-        return this.size === 'small' 
-            ? (this.fwkConfig.appLogoSmall || this.fwkConfig.appLogo) 
+        return this.size === 'small'
+            ? (this.fwkConfig.appLogoSmall || this.fwkConfig.appLogo)
             : this.fwkConfig.appLogo;
     }
 }

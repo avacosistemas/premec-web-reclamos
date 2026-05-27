@@ -86,33 +86,30 @@ export class AuthService implements AbstractAuthService {
     }
 
     refreshToken(): Observable<any> {
-       return of(true);
-    }
-    // refreshToken(): Observable<any> {
-    //     if (this.isRefreshing) {
-    //         return this.refreshTokenSubject.pipe(
-    //             filter(token => token !== null),
-    //             take(1)
-    //         );
-    //     } else {
-    //         this.isRefreshing = true;
-    //         this.refreshTokenSubject.next(null);
+        if (this.isRefreshing) {
+            return this.refreshTokenSubject.pipe(
+                filter(token => token !== null),
+                take(1)
+            );
+        } else {
+            this.isRefreshing = true;
+            this.refreshTokenSubject.next(null);
 
-    //         return this._httpClient.post<any>(environment.auth.refreshToken, {}).pipe(
-    //             tap((response: any) => {
-    //                 this.handleAuthenticationSuccess(response);
-    //                 this.refreshTokenSubject.next(response.token);
-    //             }),
-    //             catchError((error) => {
-    //                 this.signOut();
-    //                 return throwError(() => error);
-    //             }),
-    //             finalize(() => {
-    //                 this.isRefreshing = false;
-    //             })
-    //         );
-    //     }
-    // }
+            return this._httpClient.post<any>(environment.auth.refreshToken, {}).pipe(
+                tap((response: any) => {
+                    this.handleAuthenticationSuccess(response);
+                    this.refreshTokenSubject.next(response.token);
+                }),
+                catchError((error) => {
+                    this.signOut();
+                    return throwError(() => error);
+                }),
+                finalize(() => {
+                    this.isRefreshing = false;
+                })
+            );
+        }
+    }
 
     hasPermission(permission?: string): boolean {
         if (!environment.security) {

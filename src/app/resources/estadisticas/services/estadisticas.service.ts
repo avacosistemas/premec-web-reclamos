@@ -6,11 +6,13 @@ import { PREFIX_DOMAIN_API } from 'environments/environment';
 @Injectable({ providedIn: 'root' })
 export class EstadisticasService extends HttpService {
     constructor(injector: Injector) {
-        super(injector, PREFIX_DOMAIN_API + 'estadisticas/');
+        super(injector, PREFIX_DOMAIN_API + 'reclamo/estadisticas/');
     }
 
-    getStats(maquina: string, anio: number, meses: number[]): Observable<any> {
-        const mesesParam = meses.join(',');
-        return this.httpGet(`reporte?maquina=${encodeURIComponent(maquina)}&anio=${anio}&meses=${mesesParam}`);
+    getStats(machine: string, periodos: { anio: number; mes: number }[]): Observable<any> {
+        return this.httpPost(this.baseUrl + 'maquina-parada', {
+            machine,
+            periodos
+        });
     }
 }

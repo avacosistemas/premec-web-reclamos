@@ -83,6 +83,7 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
 
     private destroy$ = new Subject<void>();
     private isOptionSelected: boolean = false;
+    private isComponentInitialized = false;
     private searchTrigger$ = new Subject<any>();
     isFocused: boolean = false;
 
@@ -118,6 +119,8 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
                     }
                 }
             });
+
+        this.isComponentInitialized = true;
     }
 
     private updateSiblingField(value: any, markAsDirty: boolean = true): void {
@@ -135,6 +138,13 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
                     }
 
                     if (targetControl.value !== valToSet) {
+                        if (valToSet === null && targetControl.value !== null && targetControl.value !== undefined && targetControl.value !== '') {
+                            const myControl = formGroup.get(this.config.key);
+                            if (myControl && myControl.pristine && !myControl.touched) {
+                                return;
+                            }
+                        }
+
                         targetControl.setValue(valToSet);
                         targetControl.updateValueAndValidity();
                         if (markAsDirty) targetControl.markAsDirty();
@@ -208,7 +218,6 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
             this.isOptionSelected = false;
 
             this.autocompleteControl.setValue('', { emitEvent: false });
-            this.updateSiblingField(null, false);
 
             this.autocompleteControl.markAsPristine();
             this.autocompleteControl.markAsUntouched();
@@ -272,7 +281,7 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
     onInputFocus(): void {
         this.isFocused = true;
         this.cdr.markForCheck();
-        
+
         if (this.autoCompleteTrigger) {
             setTimeout(() => {
                 if (this.autoCompleteTrigger.panelOpen) {

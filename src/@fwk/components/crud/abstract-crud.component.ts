@@ -80,6 +80,7 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
     abstract getCRUDName(): string;
 
     private _isSubscribedToQueryParams = false;
+    protected _isNavigatingFromSearch = false;
 
     override ngOnInit(): void {
         super.ngOnInit();
@@ -93,6 +94,13 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
 
         this._isSubscribedToQueryParams = true;
         this.activatedRoute.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+            if (this._isNavigatingFromSearch) {
+                this._isNavigatingFromSearch = false;
+                const queryParams = { ...params };
+                this.parentTitle = queryParams['parentTitle'] || null;
+                this.findAll();
+                return;
+            }
             this._applyFiltersFromParams(params);
         });
     }
@@ -382,11 +390,15 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
         }
 
         Object.keys(queryParams).forEach(key => {
-            if (queryParams[key] === null || queryParams[key] === undefined || queryParams[key] === '') {
+            const val = queryParams[key];
+            if (val === null || val === undefined || val === '') {
+                queryParams[key] = null;
+            } else if (typeof val === 'object' && !(val instanceof Date) && !Array.isArray(val)) {
                 queryParams[key] = null;
             }
         });
 
+        this._isNavigatingFromSearch = true;
         this.router.navigate([], {
             relativeTo: this.activatedRoute,
             queryParams: queryParams,
