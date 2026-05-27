@@ -11,6 +11,7 @@ export const ACTIVIDADES_GRID_DEF: GridDef = {
         { columnDef: 'empleadoAsignado', columnNameKey: 'cl_empleado' },
         { columnDef: 'estado', columnNameKey: 'cl_estado' },
         { columnDef: 'valoracion', columnNameKey: 'cl_valoracion' },
+        { columnDef: 'informe', columnNameKey: 'cl_informe' }
     ],
     displayedColumns: ['activityCode', 'fecha', 'resolucion', 'horaInicio', 'horaFin', 'empleadoAsignado', 'valoracion'],
     actions: [
@@ -30,7 +31,7 @@ export const ACTIVIDADES_GRID_DEF: GridDef = {
     displayedActionsCondition: [
         {
             key: 'action_descargar_informe',
-            expression: { key: 'estado', compare: FILTER_TYPE.EQUALS, value: 'Aprobada' }
+            expression: { key: 'informe', compare: FILTER_TYPE.EQUALS, value: true }
         }
     ],
     groupActions: false,
