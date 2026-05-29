@@ -193,9 +193,13 @@ export class NavigationService {
                     const subGroupId = groupParts.slice(0, i + 1).join('.');
                     let subGroup = parentMenu.children?.find(child => child.id === subGroupId);
                     if (!subGroup) {
+                        const part = groupParts[i];
+                        const formattedTitle = part.split(/[-_]/)
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ');
                         subGroup = {
                             id: subGroupId,
-                            title: groupParts[i].charAt(0).toUpperCase() + groupParts[i].slice(1),
+                            title: formattedTitle,
                             type: 'collapsable',
                             children: []
                         };

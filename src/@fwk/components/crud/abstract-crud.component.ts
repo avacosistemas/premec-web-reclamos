@@ -17,6 +17,7 @@ import { SpinnerService } from '@fwk/modules/spinner/service/spinner.service';
 import { LocalStorageService } from '@fwk/services/local-storage/local-storage.service';
 import { DialogService } from '@fwk/services/dialog-service/dialog.service';
 import { FileService } from '@fwk/services/file/file.service';
+import { ClusterContextService } from '@fwk/services/cluster-context.service';
 
 import { I18n } from '@fwk/model/i18n';
 import { CrudDef } from '@fwk/model/component-def/crud-def';
@@ -41,6 +42,10 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
     public parentTitle: string | null = null;
     public searchPerformed = false;
 
+    get isInCluster(): boolean {
+        return this._clusterContextService?.isActive ?? false;
+    }
+
     protected spinnerControl: any;
     protected destroy$ = new Subject<void>();
 
@@ -56,6 +61,7 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
     protected localStorageService: LocalStorageService;
     protected dialogService: DialogService;
     protected fileService: FileService;
+    protected _clusterContextService!: ClusterContextService;
 
     constructor(injector: Injector) {
         super(injector);
@@ -74,6 +80,7 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
         this.fileService = injector.get(FileService);
         this._cdr = injector.get(ChangeDetectorRef);
         this.spinnerControl = this.spinnerService.getControlGlobalSpinner();
+        this._clusterContextService = injector.get(ClusterContextService);
     }
 
     abstract newObjectEntity(): E;
@@ -398,13 +405,30 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
             }
         });
 
-        this._isNavigatingFromSearch = true;
-        this.router.navigate([], {
-            relativeTo: this.activatedRoute,
-            queryParams: queryParams,
-            queryParamsHandling: 'merge',
-            replaceUrl: true
-        });
+        const currentParams = this.activatedRoute.snapshot.queryParams;
+        let isIdentical = true;
+        const allKeys = new Set([...Object.keys(queryParams), ...Object.keys(currentParams)]);
+        
+        for (const key of allKeys) {
+            const val1 = queryParams[key] === null || queryParams[key] === undefined || queryParams[key] === '' ? null : String(queryParams[key]);
+            const val2 = currentParams[key] === null || currentParams[key] === undefined || currentParams[key] === '' ? null : String(currentParams[key]);
+            if (val1 !== val2) {
+                isIdentical = false;
+                break;
+            }
+        }
+
+        if (isIdentical) {
+            this.findAll();
+        } else {
+            this._isNavigatingFromSearch = true;
+            this.router.navigate([], {
+                relativeTo: this.activatedRoute,
+                queryParams: queryParams,
+                queryParamsHandling: 'merge',
+                replaceUrl: true
+            });
+        }
     }
 
     override translate(key: string): string {

@@ -22,6 +22,7 @@ export interface AutocompleteOptions {
     useFormSenderFilter?: boolean;
     searchOnFocus?: boolean;
     allowFreeText?: boolean;
+    multiple?: boolean;
 }
 
 export interface AutocompleteChangeValue {

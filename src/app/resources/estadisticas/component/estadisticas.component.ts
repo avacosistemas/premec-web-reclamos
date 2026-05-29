@@ -210,6 +210,18 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
             });
     }
 
+    selectAllMonths(event: MouseEvent): void {
+        event.stopPropagation();
+        this.selectedMonths = this.months.map(m => m.value);
+        this.cdr.markForCheck();
+    }
+
+    deselectAllMonths(event: MouseEvent): void {
+        event.stopPropagation();
+        this.selectedMonths = [];
+        this.cdr.markForCheck();
+    }
+
     limpiar(): void {
         this.maquinaQuery = '';
         this.maquinaSelected = null;

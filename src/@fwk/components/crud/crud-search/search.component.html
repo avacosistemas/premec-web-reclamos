@@ -1,4 +1,4 @@
-<mat-expansion-panel #searchPanel class="border-t shadow-none rounded-none dark:bg-transparent" [expanded]="false"
+<mat-expansion-panel #searchPanel class="border-t shadow-none rounded-none dark:bg-transparent" [expanded]="!!crudDef?.cancelInitSearch"
     *ngIf="generalFields && generalFields.length > 0">
     <mat-expansion-panel-header class="px-4 sm:px-6">
         <mat-panel-title class="flex items-center space-x-3">

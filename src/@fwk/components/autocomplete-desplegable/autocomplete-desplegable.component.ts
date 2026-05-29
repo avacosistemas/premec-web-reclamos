@@ -67,6 +67,7 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
 
     autocompleteControl = new FormControl<string | object | null>(null);
     filteredOptions$: Observable<any[]> = of([]);
+    selectedItems: any[] = [];
 
     matcher = new class implements ErrorStateMatcher {
         constructor(private component: AutocompleteDesplegableComponent) { }
@@ -210,18 +211,35 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
     }
 
     writeValue(value: any): void {
-        this.autocompleteControl.setValue(value, { emitEvent: false });
-
-        if (value) {
-            this.updateSiblingField(value, false);
-        } else {
-            this.isOptionSelected = false;
-
+        if (this.config?.options?.multiple) {
+            if (Array.isArray(value)) {
+                if (value.length > 0 && typeof value[0] === 'object') {
+                    this.selectedItems = [...value];
+                } else {
+                    const options = this.config?.options as AutocompleteOptions;
+                    this.selectedItems = value.map(id => ({
+                        [options.elementValue || 'id']: id,
+                        [options.elementLabel || 'name']: id
+                    }));
+                }
+            } else {
+                this.selectedItems = [];
+            }
             this.autocompleteControl.setValue('', { emitEvent: false });
+        } else {
+            this.autocompleteControl.setValue(value, { emitEvent: false });
 
-            this.autocompleteControl.markAsPristine();
-            this.autocompleteControl.markAsUntouched();
-            this.autocompleteControl.setErrors(null);
+            if (value) {
+                this.updateSiblingField(value, false);
+            } else {
+                this.isOptionSelected = false;
+
+                this.autocompleteControl.setValue('', { emitEvent: false });
+
+                this.autocompleteControl.markAsPristine();
+                this.autocompleteControl.markAsUntouched();
+                this.autocompleteControl.setErrors(null);
+            }
         }
 
         this.cdr.markForCheck();
@@ -241,9 +259,16 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
     }
 
     validate(control: AbstractControl): ValidationErrors | null {
-        const value = this.autocompleteControl.value;
         const isRequired = this.config?.required;
 
+        if (this.config?.options?.multiple) {
+            if (isRequired && (!this.selectedItems || this.selectedItems.length === 0)) {
+                return { required: true };
+            }
+            return null;
+        }
+
+        const value = this.autocompleteControl.value;
         if (isRequired && (value === null || value === undefined || value === '')) {
             return { required: true };
         }
@@ -276,6 +301,69 @@ export class AutocompleteDesplegableComponent implements OnInit, OnDestroy, Cont
         this.onTouched();
         this.autocompleteControl.updateValueAndValidity();
         this.cdr.markForCheck();
+
+        if (this.config?.options?.multiple) {
+            setTimeout(() => {
+                this.addItem();
+            }, 0);
+        }
+    }
+
+    addItem(event?: MouseEvent): void {
+        if (event) event.stopPropagation();
+        const value = this.autocompleteControl.value;
+        if (!value || typeof value !== 'object') return;
+
+        const valObj = value as any;
+        const options = this.config?.options as AutocompleteOptions;
+        const valId = options.elementValue ? valObj[options.elementValue] : valObj.id;
+
+        const exists = this.selectedItems.some(item => {
+            const itemId = options.elementValue ? item[options.elementValue] : item.id;
+            return itemId === valId;
+        });
+
+        if (!exists) {
+            this.selectedItems.push(value);
+            this.propagateMultipleChanges();
+        }
+
+        this.autocompleteControl.setValue('', { emitEvent: true });
+        this.isOptionSelected = false;
+        this.cdr.markForCheck();
+    }
+
+    removeItem(itemToRemove: any, event: MouseEvent): void {
+        event.stopPropagation();
+        const options = this.config?.options as AutocompleteOptions;
+        const removeId = options.elementValue ? itemToRemove[options.elementValue] : itemToRemove.id;
+
+        this.selectedItems = this.selectedItems.filter(item => {
+            const itemId = options.elementValue ? item[options.elementValue] : item.id;
+            return itemId !== removeId;
+        });
+
+        this.propagateMultipleChanges();
+        this.cdr.markForCheck();
+    }
+
+    private propagateMultipleChanges(): void {
+        const options = this.config?.options as AutocompleteOptions;
+        const ids = this.selectedItems.map(item => options.elementValue ? item[options.elementValue] : item.id);
+
+        this.onChange(ids);
+
+        if (this.controlContainer && this.controlContainer.control) {
+            const formGroup = this.controlContainer.control as FormGroup;
+            if (options?.transferIdToField) {
+                const targetControl = formGroup.get(options.transferIdToField);
+                if (targetControl) {
+                    targetControl.setValue(ids);
+                    targetControl.updateValueAndValidity();
+                    targetControl.markAsDirty();
+                }
+            }
+        }
     }
 
     onInputFocus(): void {

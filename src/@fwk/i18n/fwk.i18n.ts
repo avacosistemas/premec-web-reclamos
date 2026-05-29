@@ -26,6 +26,14 @@ export const FWK_I18N_DEF = {
     year_label: 'Año',
     change_password: 'Cambiar Contraseña',
 
+    // --- Cluster y Detalles ---
+    cluster_details_title: 'Detalles',
+    cluster_edit_details_title: 'Editar Detalles',
+    cluster_edit_button: 'Editar',
+    cluster_save_changes_button: 'Guardar',
+    cluster_cancel_button: 'Cancelar',
+    cluster_actions_button: 'Acciones',
+
     // --- File Uploader ---
     file_uploader_default_title: 'Cargar archivo',
     file_uploader_default_description: 'Arrastra tu archivo aquí o haz click para buscar en tu equipo',

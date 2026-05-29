@@ -56,4 +56,6 @@ export class CrudDef extends ComponentDef {
     paramKey?: string;
     type?: 'info' | 'warning' | 'error';
   }[];
+
+  clusterConfig?: any;
 }

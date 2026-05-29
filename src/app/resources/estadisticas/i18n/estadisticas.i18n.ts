@@ -9,6 +9,8 @@ export const ESTADISTICAS_I18N_DEF = {
         es_meses: 'Meses',
         es_btn_ver_resultados: 'Ver Resultados',
         es_btn_limpiar: 'Limpiar',
+        es_seleccionar_todos: 'Seleccionar todos',
+        es_deseleccionar_todos: 'Limpiar',
         es_card_maquina: 'Máquina',
         es_card_dias_detenida: 'Días detenida',
         es_card_reclamos: 'Reclamos asociados',

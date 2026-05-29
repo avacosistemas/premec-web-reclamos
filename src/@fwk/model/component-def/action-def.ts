@@ -1,4 +1,4 @@
-﻿import { WsDef } from '../ws-def';
+import { WsDef } from '../ws-def';
 import { DynamicField } from '../dynamic-form/dynamic-field';
 import { FormDef } from '../form-def';
 
@@ -21,6 +21,7 @@ export class ActionDef {
   icon?: string;
 
   color?: 'primary' | 'accent' | 'warn';
+  type?: 'warn' | 'error' | 'info' | 'success' | 'primary' | 'accent' | 'basic';
   appearance?: 'stroked' | 'flat' | 'basic' | 'icon';
   hidden?: boolean;
   disabled?: boolean;
@@ -38,4 +39,11 @@ export class ActionDef {
   redirect?: any;
   formKey?: string;
   fileName?: string;
+  path?: string;
+  displayType?: 'menu' | 'action';
+  actions?: ActionDef[];
+  confirmMessage?: string;
+  confirmMessageKey?: string;
+  redirectTo?: string;
+  redirectToSuccess?: string;
 }

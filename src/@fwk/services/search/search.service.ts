@@ -64,13 +64,12 @@ export class SearchService {
             }
             
             const breadcrumb = navDef.group ? navDef.group.split('.').map(part => part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ')) : [];
-            const allKeywords = dictionary ? Object.values(dictionary).join(' ').toLowerCase() : '';
 
             results.push({
                 title: translatedTitle,
                 breadcrumb,
                 link: navDef.url,
-                keywords: `${translatedTitle} ${breadcrumb.join(' ')} ${allKeywords}`.toLowerCase()
+                keywords: `${translatedTitle} ${breadcrumb.join(' ')}`.toLowerCase()
             });
         });
         

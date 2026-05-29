@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { map, tap, catchError, finalize, switchMap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
@@ -151,7 +151,7 @@ export class ActionDefService {
 
     this.spinnerGeneralControl.show();
     return this.genericHttpService.callWs(action.ws, entity).pipe(
-      catchError(e => this.handleActionError(e)),
+      catchError(e => this.handleActionError(e, action)),
       finalize(() => this.spinnerGeneralControl.hide())
     );
   }
@@ -167,14 +167,48 @@ export class ActionDefService {
         });
     }
 
+    const actionType = (action as any).type || (action.color === 'warn' ? 'warn' : undefined);
+    
+    let modalIconName = 'heroicons_outline:question-mark-circle';
+    let modalIconColor: 'primary' | 'accent' | 'warn' | 'basic' | 'info' | 'success' = 'primary';
+    let confirmBtnColor: 'primary' | 'accent' | 'warn' = 'primary';
+
+    if (actionType === 'warn' || actionType === 'error') {
+        modalIconName = 'heroicons_outline:exclamation-triangle';
+        modalIconColor = 'warn';
+        confirmBtnColor = 'warn';
+    } else if (actionType === 'info') {
+        modalIconName = 'heroicons_outline:information-circle';
+        modalIconColor = 'info';
+        confirmBtnColor = 'primary';
+    } else if (actionType === 'success') {
+        modalIconName = 'heroicons_outline:check-circle';
+        modalIconColor = 'success';
+        confirmBtnColor = 'accent';
+    }
+
     return this.dialogService.showQuestionModal({
       title: action.actionName,
       message: message,
+      icon: {
+        show: true,
+        name: modalIconName,
+        color: modalIconColor
+      },
+      actions: {
+        confirm: {
+          show: true,
+          color: confirmBtnColor
+        },
+        cancel: {
+          show: true
+        }
+      },
       onSubmit: () => { },
       onReject: () => { }
     }).afterClosed().pipe(
       switchMap(confirmed => {
-        if (confirmed) {
+        if (confirmed === 'confirmed') {
           if (!action.ws) {
             const errorMsg = 'No Web Service defined for this confirm action';
             console.error(errorMsg, action);
@@ -184,7 +218,7 @@ export class ActionDefService {
 
           this.spinnerGeneralControl.show();
           return this.genericHttpService.callWs(action.ws, entity).pipe(
-            catchError(e => this.handleActionError(e)),
+            catchError(e => this.handleActionError(e, action)),
             finalize(() => this.spinnerGeneralControl.hide())
           );
         }
@@ -193,8 +227,8 @@ export class ActionDefService {
     );
   }
 
-  private handleActionError(e: any): Observable<never> {
-    const message = e?.error?.message ?? 'Se produjo un error al intentar realizar la acción';
+  private handleActionError(e: any, action?: ActionDef): Observable<never> {
+    const message = action?.ws?.messageError ?? e?.error?.message ?? 'Se produjo un error al intentar realizar la acción';
     this.notificationService.notifyError(message);
     return throwError(() => new Error(message));
   }

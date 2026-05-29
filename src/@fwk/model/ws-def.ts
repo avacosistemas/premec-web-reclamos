@@ -1,4 +1,4 @@
-﻿import { DynamicField } from './dynamic-form/dynamic-field';
+import { DynamicField } from './dynamic-form/dynamic-field';
 import { Params } from '@angular/router';
 
 export const HTTP_METHODS = {
@@ -16,4 +16,6 @@ export class WsDef {
     method?: string;
     filter?: DynamicField<any>;
     querystring?: Params;
+    messageSuccess?: string;
+    messageError?: string;
 }

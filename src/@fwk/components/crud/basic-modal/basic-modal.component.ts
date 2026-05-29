@@ -24,6 +24,8 @@ import { TranslatePipe } from '../../../pipe/translate.pipe';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HTTP_METHODS } from '@fwk/model/ws-def';
 import { LocalStorageService } from '../../../services/local-storage/local-storage.service';
+import { AuthService } from '@fwk/auth/auth.service';
+import { ActionDefService } from '@fwk/services/action-def-service/action-def.service';
 
 @Component({
     selector: 'fwk-basic-modal-component',
@@ -247,5 +249,85 @@ export class BasicModalComponent extends AbstractFormComponent implements OnInit
     get submitLabel(): string {
         if (this.config?.submitButtonKey) { return this.translate(this.config.submitButtonKey); }
         return this.translate('modal_button_confirm');
+    }
+
+    get activeInnerActions(): any[] {
+        const actions = this.config?.actions || [];
+        const authService = this.injector.get(AuthService, null);
+        return actions.filter((action: any) => {
+            if (action.actionSecurity && authService && !authService.hasPermission(action.actionSecurity)) {
+                return false;
+            }
+            return true;
+        });
+    }
+
+    executeInnerAction(action: any): void {
+        const actionDefService = this.injector.get(ActionDefService);
+        
+        const cloned = JSON.parse(JSON.stringify(action));
+        if (cloned.actionNameKey) {
+            cloned.actionName = this.translate(cloned.actionNameKey);
+        }
+        if (cloned.confirm) {
+            if (typeof cloned.confirm === 'object') {
+                if (cloned.confirm.messageKey) {
+                    const trans = this.translate(cloned.confirm.messageKey);
+                    cloned.confirm.message = trans !== cloned.confirm.messageKey ? trans : (cloned.confirm.message || '¿Está seguro de que desea realizar esta operación?');
+                }
+            } else if (cloned.confirm === true) {
+                const confirmKey = cloned.confirmMessageKey || cloned.confirmMessage;
+                let transMsg = '¿Está seguro de que desea realizar esta operación?';
+                if (confirmKey) {
+                    const trans = this.translate(confirmKey);
+                    transMsg = trans !== confirmKey ? trans : (cloned.confirmMessage || transMsg);
+                }
+                cloned.confirm = {
+                    message: transMsg
+                };
+            }
+        }
+        if (cloned.form) {
+            cloned.form.forEach((field: any) => {
+                if (field.labelKey) {
+                    field.label = this.translate(field.labelKey);
+                }
+            });
+        }
+
+        const row = { ...this.entity };
+        row.id = row.idContact || row.id;
+
+        const i18nObj = this.data.i18n || new I18n();
+
+        this._submitting = true;
+        this._cdr.markForCheck();
+
+        actionDefService.submitAction(cloned, row, i18nObj, undefined)
+            .subscribe({
+                next: (res) => {
+                    if (res === null) {
+                        this._submitting = false;
+                        this._cdr.markForCheck();
+                        return;
+                    }
+                    if (res && res.hasOwnProperty('ok') && !res.ok) {
+                        const errorMsg = res.error?.message || 'Error al intentar realizar la acción.';
+                        this.notificationService.notifyError(errorMsg);
+                        this._submitting = false;
+                        this._cdr.markForCheck();
+                        return;
+                    }
+                    this.notificationService.notifySuccess(this.translate('success_message') || 'Acción ejecutada con éxito.');
+                    this.dialogRef.close(true);
+                },
+                error: (err) => {
+                    console.error('[BasicModal] Error executing inner action:', err);
+                    const msg = err?.error?.message || 'Error al intentar ejecutar la acción.';
+                    this.notificationService.notifyError(msg);
+                    this._submitting = false;
+                    this._cdr.markForCheck();
+                }
+            });
     }
 }

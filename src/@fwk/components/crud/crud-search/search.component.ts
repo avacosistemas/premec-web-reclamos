@@ -250,7 +250,7 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
     this.displayedColumnsChange.emit([...this.initialDisplayableColumns]);
     this.initializeColumnVisibility();
 
-    this.onSubmitSearch();
+    this.onSubmitSearch(false);
   }
 
   resetToDefaults(): void {
@@ -278,7 +278,7 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
     this._cdr.markForCheck();
   }
 
-  onSubmitSearch(): void {
+  onSubmitSearch(closePanel: boolean = true): void {
     const subForm = this.form.get('subForm') as FormGroup;
 
     if (subForm) {
@@ -292,7 +292,7 @@ export class SearchComponent extends AbstractComponent implements OnInit, AfterV
     this.onChangeSearchEntity.emit(this.entity);
     this.updateActiveFilterCount();
 
-    if (this.searchPanel) {
+    if (closePanel && this.searchPanel) {
       setTimeout(() => {
         this.searchPanel.close();
         this._cdr.markForCheck();

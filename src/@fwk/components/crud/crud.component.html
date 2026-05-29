@@ -10,7 +10,7 @@
                     <back-button *ngIf="crudDef.backButton" color="accent"></back-button>
                 </div>
 
-                <div class="text-lg text-secondary" *ngIf="parentTitle">
+                <div class="text-lg text-secondary" *ngIf="parentTitle && !isInCluster">
                     {{ parentTitle }}
                 </div>
 
@@ -40,8 +40,7 @@
                     [matTooltip]="'delete_selected_tooltip' | translate" [disabled]="isTableLoading"
                     (click)="openDeleteDialog()">
                     <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
-                    <span class="ml-2 hidden sm:inline">{{ 'crud_delete_button' | translate }} ({{ selects.length
-                        }})</span>
+                    <span class="ml-2 hidden sm:inline">{{ 'crud_delete_button' | translate }} ({{ selects.length }})</span>
                 </button>
 
                 <button *ngIf="crudDef.exportCsv" mat-icon-button color="accent" (click)="exportCsv()"

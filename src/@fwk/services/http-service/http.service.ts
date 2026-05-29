@@ -175,12 +175,15 @@ export class HttpService extends BaseService {
 
   private handleResponse(response: any): any {
     if (response && response.ok === false) {
-      const errorMessage = this.i18nService.getDictionary('fwk')?.translate?.('http_error_generic') || 'La operación falló pero el servidor no especificó la causa.';
-      return this.handleError({
+      const errorMessage = response.error?.message ||
+        this.i18nService.getDictionary('fwk')?.translate?.('http_error_generic') ||
+        'La operación falló pero el servidor no especificó la causa.';
+      throw {
         error: {
+          status: response.error?.type || 'VALIDATIONS_ERRORS',
           message: errorMessage
         }
-      });
+      };
     }
 
     if (response && response.page) {
