@@ -143,6 +143,7 @@ export const FWK_I18N_DEF = {
     // --- Módulo CRUD: Tabla (Grid) ---
     boolean_false: 'No',
     boolean_true: 'Sí',
+    grid_rating_unrated: 'Sin valorar',
     table_action_button: 'Acciones',
     table_clear_filters_button: 'Limpiar filtros',
     table_empty_state_subtitle: '¡Crea el primero para empezar!',

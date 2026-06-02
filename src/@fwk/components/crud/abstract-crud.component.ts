@@ -269,6 +269,11 @@ export abstract class AbstractCrudComponent<E extends Entity, S extends CRUD<E>>
     private setUpI18nGrid(grid: GridDef, i18n: I18n): void {
         grid.columnsDef?.forEach((column) => {
             if (column.columnNameKey) { column.columnName = i18n?.translate?.(column.columnNameKey); }
+            if ((column as any).columnActions) {
+                (column as any).columnActions.forEach((action: any) => {
+                    if (action.actionNameKey) { action.actionName = i18n?.translate?.(action.actionNameKey); }
+                });
+            }
         });
         grid.actions?.forEach(action => {
             if (action.actionNameKey) { action.actionName = i18n?.translate?.(action.actionNameKey); }

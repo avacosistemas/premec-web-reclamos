@@ -1,4 +1,4 @@
-﻿<div *ngIf="initOk" class="relative" [ngClass]="containerClass">
+<div *ngIf="initOk" class="relative" [ngClass]="containerClass">
 
     <div *ngIf="isLoading"
         class="absolute inset-0 z-10 dark:bg-gray-900 flex flex-col bg-card transition-opacity duration-300 overflow-hidden">
@@ -13,11 +13,11 @@
         <div class="relative w-full">
 
             <div *ngIf="canScrollLeft" class="scroll-shadow-zone left-zone" (mouseenter)="startScrolling('left')"
-                (mouseleave)="stopScrolling()">
+                (mouseleave)="stopScrolling()" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)">
             </div>
 
             <div *ngIf="datasource?.data?.length > 0" #tableContainer (scroll)="checkScrollVisibility()"
-                (window:resize)="checkScrollVisibility()"
+                (window:resize)="checkScrollVisibility()" (wheel)="stopScrolling()" (touchmove)="stopScrolling()"
                 class="overflow-x-auto container-table dark:bg-transparent bg-white scroll-smooth">
                 <mat-table matSort [dataSource]="datasource">
 
@@ -47,8 +47,37 @@
 
                         <mat-cell *matCellDef="let element"
                             [ngClass]="[def.cellClass || '', getColumnStyles(def), def.cellClassRender ? def.cellClassRender(element) : '']">
-                            <span *ngIf="!def.cellRender">{{ getValue(element, def.columnDef, def) }}</span>
-                            <span *ngIf="def.cellRender" [innerHTML]="getValue(element, def.columnDef, def)"></span>
+                            <ng-container *ngIf="def.columnType === 'rating'; else nextCheck">
+                                <fwk-rating
+                                    [columnDef]="def"
+                                    [element]="element"
+                                    [value]="getValue(element, def.columnDef, def)"
+                                    [columnActions]="getColumnActions(def, element)"
+                                    [dictionaryName]="crud.crudDef?.i18n?.name || 'app'"
+                                    (onActionTriggered)="submitAction($event.action, $event.element, $event.event)">
+                                </fwk-rating>
+                            </ng-container>
+                            
+                            <ng-template #nextCheck>
+                                <ng-container *ngIf="def.columnType === 'button'; else regularCell">
+                                    <div class="flex items-center gap-2">
+                                        <ng-container *ngIf="getColumnActions(def, element) as colActions">
+                                            <button *ngFor="let act of colActions"
+                                                [ngClass]="getActionColorClasses(act)"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full border transition-colors duration-150"
+                                                (click)="submitAction(act, element, $event)">
+                                                <mat-icon *ngIf="act.icon" [svgIcon]="act.icon" class="!w-3 !h-3"></mat-icon>
+                                                <span>{{ act.actionName }}</span>
+                                            </button>
+                                        </ng-container>
+                                    </div>
+                                </ng-container>
+                            </ng-template>
+
+                            <ng-template #regularCell>
+                                <span *ngIf="!def.cellRender">{{ getValue(element, def.columnDef, def) }}</span>
+                                <span *ngIf="def.cellRender" [innerHTML]="getValue(element, def.columnDef, def)"></span>
+                            </ng-template>
                         </mat-cell>
                     </ng-container>
 
@@ -132,7 +161,8 @@
             </div>
 
             <div *ngIf="canScrollRight" class="scroll-shadow-zone right-zone animation transition duration-300"
-                (mouseenter)="startScrolling('right')" (mouseleave)="stopScrolling()">
+                (mouseenter)="startScrolling('right')" (mouseleave)="stopScrolling()"
+                (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)">
             </div>
 
             <div *ngIf="!isLoading && datasource?.data?.length === 0"

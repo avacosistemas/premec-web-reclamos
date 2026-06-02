@@ -36,6 +36,8 @@ import { Row, StatusTable } from './crud-table.model';
 import { AuthService } from '@fwk/auth/auth.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { FormService } from '@fwk/services/dynamic-form/form.service';
+import { RatingComponent } from '../../rating/rating.component';
+import { RatingService } from '../../rating/rating.service';
 
 const ACTION_COLUMN = '_action';
 const GENERAL_ACTION_COLUMN = '_general_action';
@@ -49,7 +51,8 @@ const GENERAL_ACTION_COLUMN = '_general_action';
         CommonModule, FormsModule, RouterModule,
         MatTableModule, MatSortModule, MatPaginatorModule,
         MatCheckboxModule, MatButtonModule, MatIconModule, MatTooltipModule,
-        MatProgressSpinnerModule, SlicePipe, TranslatePipe, MatMenuModule
+        MatProgressSpinnerModule, SlicePipe, TranslatePipe, MatMenuModule,
+        RatingComponent
     ],
     animations: [
         trigger('groupButtons', [
@@ -157,6 +160,7 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
     private resetSelects: boolean = false;
     private authService: AuthService;
     private formService: FormService;
+    private ratingService: RatingService;
 
     constructor(
         public injector: Injector,
@@ -174,6 +178,7 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
         this.componentDefService = injector.get(ComponentDefService);
         this.filterService = injector.get(FilterService);
         this.formService = injector.get(FormService);
+        this.ratingService = injector.get(RatingService);
         this.pageSize = this.crud?.crudDef?.pagination?.pageSize ?? 10;
         this.currentPage = this.crud?.crudDef?.pagination?.page ?? 0;
 
@@ -225,8 +230,12 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
         this._cdr.markForCheck();
     }
 
+
     startScrolling(direction: 'left' | 'right'): void {
         this.stopScrolling();
+        if (this.tableContainer) {
+            this.tableContainer.nativeElement.style.scrollBehavior = 'auto';
+        }
 
         this.scrollInterval = setInterval(() => {
             if (!this.tableContainer) return;
@@ -246,6 +255,30 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
         if (this.scrollInterval) {
             clearInterval(this.scrollInterval);
             this.scrollInterval = null;
+        }
+        if (this.tableContainer) {
+            this.tableContainer.nativeElement.style.scrollBehavior = '';
+        }
+    }
+
+    private touchStartX = 0;
+    private touchStartScrollLeft = 0;
+
+    onTouchStart(event: TouchEvent): void {
+        if (event.touches.length > 0) {
+            this.touchStartX = event.touches[0].clientX;
+            if (this.tableContainer) {
+                this.touchStartScrollLeft = this.tableContainer.nativeElement.scrollLeft;
+            }
+        }
+    }
+
+    onTouchMove(event: TouchEvent): void {
+        if (event.touches.length > 0 && this.tableContainer) {
+            const currentX = event.touches[0].clientX;
+            const deltaX = currentX - this.touchStartX;
+            this.tableContainer.nativeElement.scrollLeft = this.touchStartScrollLeft - deltaX;
+            this.checkScrollVisibility();
         }
     }
 
@@ -269,6 +302,55 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
             this.columnDefId = columnDefId.columnDef;
         }
         this.initOk = true;
+    }
+
+    getColumnActions(def: any, element: any): ActionDef[] {
+        if (!def.columnActions) return [];
+        const conditions = this.grid.displayedActionsCondition as DisplayActionsCondition[] | undefined;
+        let actions = this.actionDefService.getActions(conditions || [], def.columnActions, element);
+        actions = actions.filter(action => !action.actionSecurity || this.authService.hasPermission(action.actionSecurity));
+        return actions;
+    }
+
+    getStarsArray(max: number): number[] {
+        return Array.from({ length: max }, (_, i) => i + 1);
+    }
+
+    getActionColorClasses(action: any): string {
+        const type = action.type || action.color || 'primary';
+        switch (type) {
+            case 'success':
+                return 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-950/40';
+            case 'warn':
+            case 'warning':
+                return 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-200/50 dark:border-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-950/40';
+            case 'error':
+            case 'danger':
+                return 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-200/50 dark:border-red-900/30 hover:bg-red-100 dark:hover:bg-red-950/40';
+            case 'info':
+            case 'primary':
+                return 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border-blue-200/50 dark:border-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-950/40';
+            case 'accent':
+                return 'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 border-indigo-200/50 dark:border-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-950/40';
+            default:
+                return 'bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400 border-gray-200/50 dark:border-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-900/40';
+        }
+    }
+
+    openRatingDialog(action: ActionDef, entity: any): void {
+        const ratingCol = this.grid.columnsDef.find(c => c.columnType === 'rating');
+        const maxStars = ratingCol?.maxStars || 4;
+        const idKey = this.grid.columnsDef.find(c => c.id)?.columnDef || 'id';
+        const dictionaryName = this.crud.crudDef?.i18n?.name || 'app';
+
+        this.ratingService.openRatingDialog(
+            action,
+            entity,
+            maxStars,
+            idKey,
+            dictionaryName,
+            () => { this.crud.findAll(); }
+        );
     }
 
     private wireUpDataSource(): void {
@@ -337,6 +419,8 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
                 entities: entity[action.gridModal.fromArrayField],
                 gridDef: action.gridModal.gridDef
             });
+        } else if (action.actionType === 'custom_rating') {
+            this.openRatingDialog(action, entity);
         } else if (action.confirm) {
             this.actionDefService.submitAction(action, entity, this.crud.i18nCurrentCrudComponent, undefined)
                 .subscribe(r => {
@@ -363,7 +447,7 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
                     this._cdr.markForCheck();
                 })
             ).subscribe({
-                next: (fullEntity) => {
+                next: (fullEntity: any) => {
                     const entityToUse = fullEntity || entity;
                     if (recordId) { entityToUse.id = recordId; }
 
@@ -372,10 +456,10 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
                     const i18n = dictionaryName ? this.i18nService.getDictionary(dictionaryName) : undefined;
 
                     if (actionClone.formDef) {
-                        this.formService.setUpFormDef(i18n, actionClone.formDef);
+                        this.formService.setUpFormDef(i18n!, actionClone.formDef);
                     }
                     if (actionClone.form) {
-                        this.formService.setUpFieldTextFromI18n(i18n, actionClone.form);
+                        this.formService.setUpFieldTextFromI18n(i18n!, actionClone.form);
                     }
 
                     const data = {
@@ -402,16 +486,24 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
             if (ACTION_TYPES.file_download === action.actionType) {
                 this.spinnerGeneralControl.show();
                 this.fileService.downloadFileByAction(action, entity).subscribe({
-                    complete: () => { this.spinnerGeneralControl.hide(); }
+                    next: () => { this.spinnerGeneralControl.hide(); },
+                    error: (err) => {
+                        this.spinnerGeneralControl.hide();
+                        this.notificationService.notifyError(err?.message || 'Error al descargar el archivo');
+                    }
                 });
             } else if (ACTION_TYPES.file_preview === action.actionType) {
                 this.spinnerGeneralControl.show();
                 this.fileService.previewFileByAction(action, entity).subscribe({
-                    complete: () => { this.spinnerGeneralControl.hide(); }
+                    next: () => { this.spinnerGeneralControl.hide(); },
+                    error: (err) => {
+                        this.spinnerGeneralControl.hide();
+                        this.notificationService.notifyError(err?.message || 'Error al visualizar el archivo');
+                    }
                 });
             } else if (ACTION_TYPES.redirect === action.actionType) {
                 this.handleRedirectAction(action, entity, $event);
-            } else {
+            } else if (action.ws) {
                 this.spinnerGeneralControl.show();
                 this.genericHttpService.callWs(action.ws, entity).subscribe({
                     next: () => {
@@ -647,10 +739,10 @@ export class CrudTableComponent extends AbstractComponent implements OnInit, Aft
         const i18n = dictionaryName ? this.i18nService.getDictionary(dictionaryName) : undefined;
 
         if (actionClone.formDef) {
-            this.formService.setUpFormDef(i18n, actionClone.formDef);
+            this.formService.setUpFormDef(i18n!, actionClone.formDef);
         }
         if (actionClone.form) {
-            this.formService.setUpFieldTextFromI18n(i18n, actionClone.form);
+            this.formService.setUpFieldTextFromI18n(i18n!, actionClone.form);
         }
 
         const data = {

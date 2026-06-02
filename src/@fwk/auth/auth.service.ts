@@ -66,8 +66,8 @@ export class AuthService implements AbstractAuthService {
                 if (!this._userService.userValue) {
                     const storedUser = this.getUserFromLocalStorage();
                     if (storedUser) {
-                        this._userService.user = storedUser;
                         this._userPermissions = new Set(storedUser.permisos ?? []);
+                        this._userService.user = storedUser;
                     }
                 }
                 return true;
@@ -95,6 +95,7 @@ export class AuthService implements AbstractAuthService {
             this.isRefreshing = true;
             this.refreshTokenSubject.next(null);
 
+            // return this._httpClient.get<any>(`/mock-refresh.txt?cb=${Date.now()}`).pipe(
             return this._httpClient.post<any>(environment.auth.refreshToken, {}).pipe(
                 tap((response: any) => {
                     this.handleAuthenticationSuccess(response);
@@ -154,6 +155,9 @@ export class AuthService implements AbstractAuthService {
 
         const storedUser = this.getUserFromLocalStorage();
 
+        const hasPermissionsInResponse = responseFromApi.permissions !== undefined ||
+                                         responseFromApi.permisos !== undefined;
+
         let permisosProcesados: string[] = [];
 
         if (responseFromApi.permissions && Array.isArray(responseFromApi.permissions)) {
@@ -166,7 +170,7 @@ export class AuthService implements AbstractAuthService {
             }
         }
 
-        if (permisosProcesados.length === 0 && storedUser?.permisos?.length) {
+        if (!hasPermissionsInResponse && storedUser?.permisos?.length) {
             permisosProcesados = storedUser.permisos;
         }
 
@@ -189,21 +193,21 @@ export class AuthService implements AbstractAuthService {
             id: responseFromApi.guid ?? storedUser?.id ?? '',
             name: displayName,
             email: responseFromApi.email || storedUser?.email || emailNotSpecified,
-            avatar: null,
+            avatar: storedUser?.avatar ?? undefined,
             status: 'online',
             permisos: permisosProcesados,
-            refreshToken: refreshTokenValue || accessToken,
+            refreshToken: refreshTokenValue || storedUser?.refreshToken || accessToken,
             username: loginUsername,
-            passwordExpired: responseFromApi.passwordExpired ?? storedUser?.passwordExpired,
-            fechaVencimiento: responseFromApi.fechaVencimiento
+            passwordExpired: responseFromApi.passwordExpired !== undefined ? (responseFromApi.passwordExpired ?? undefined) : storedUser?.passwordExpired,
+            fechaVencimiento: responseFromApi.fechaVencimiento !== undefined ? (responseFromApi.fechaVencimiento ?? undefined) : storedUser?.fechaVencimiento
         };
 
         this.setToken(accessToken);
         this.setUser(userForFuse);
 
-        this._authenticated.next(true);
-        this._userService.user = userForFuse;
         this._userPermissions = new Set(userForFuse.permisos);
+        this._userService.user = userForFuse;
+        this._authenticated.next(true);
 
         this.scheduleTokenRenewal(accessToken);
     }

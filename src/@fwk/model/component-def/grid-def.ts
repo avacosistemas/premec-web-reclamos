@@ -1,4 +1,4 @@
-﻿import { DisplayCondition } from './display-condition';
+import { DisplayCondition } from './display-condition';
 import { ActionDef } from './action-def';
 import { DynamicFieldConditionIf } from '../dynamic-form/dynamic-field-condition-if';
 
@@ -50,4 +50,7 @@ export interface ColumnDef {
 
     singleId?: boolean;
     multiId?: boolean;
+
+    maxStars?: number;
+    columnActions?: ActionDef[];
 }

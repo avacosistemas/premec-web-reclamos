@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
@@ -6,6 +6,9 @@ import { ActionDef, ACTION_TYPES } from '../../model/component-def/action-def';
 import { HTTP_METHODS } from '../../model/ws-def';
 import { GenericHttpService } from '../generic-http-service/generic-http.service';
 import { DialogService } from '../dialog-service/dialog.service';
+import { AbstractAuthService } from '@fwk/auth/abstract-auth.service';
+import { FuseLoadingService } from '@fuse/services/loading';
+import { PREFIX_DOMAIN_API } from 'environments/environment';
 
 interface FileEntity {
   file: string;
@@ -21,7 +24,9 @@ export class FileService {
   constructor(
     private localStorageService: LocalStorageService,
     private dialogService: DialogService,
-    private genericHttpService: GenericHttpService
+    private genericHttpService: GenericHttpService,
+    private authService: AbstractAuthService,
+    private fuseLoadingService: FuseLoadingService
   ) { }
 
   downloadFileByAction(action: ActionDef, entity: Record<string, any>): Observable<void> {
@@ -71,10 +76,18 @@ export class FileService {
     }
 
     return new Observable<void>(observer => {
+      this.fuseLoadingService.show();
+
       const xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
 
-      xhr.onload = function () {
+      const token = this.authService.getToken();
+      if (token && (!url.startsWith('http') || url.startsWith(PREFIX_DOMAIN_API))) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+
+      xhr.onload = () => {
+        this.fuseLoadingService.hide();
         if (xhr.status === 200) {
           const raw = xhr.responseText;
           let base64 = '';
@@ -82,7 +95,17 @@ export class FileService {
 
           try {
             const json = JSON.parse(raw);
-            base64 = json[ws.key] || json['data'] || '';
+            const extracted = json[ws.key] !== undefined && json[ws.key] !== null ? json[ws.key] : json['data'];
+            if (extracted && typeof extracted === 'object') {
+              base64 = extracted.file || '';
+              if (extracted.fileName) {
+                name = extracted.fileName;
+              }
+            } else if (typeof extracted === 'string') {
+              base64 = extracted;
+            } else {
+              base64 = raw;
+            }
           } catch (_) {
             base64 = raw;
           }
@@ -120,11 +143,17 @@ export class FileService {
         }
       };
 
-      xhr.onerror = function () {
+      xhr.onerror = () => {
+        this.fuseLoadingService.hide();
         observer.error(new Error('Error de red al descargar el archivo'));
       };
 
       xhr.send();
+
+      return () => {
+        this.fuseLoadingService.hide();
+        xhr.abort();
+      };
     });
   }
 

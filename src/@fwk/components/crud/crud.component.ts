@@ -109,6 +109,7 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
     this.userService.user$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
+        this.updateAlerts();
         this._cdr.markForCheck();
       });
   }
@@ -123,6 +124,7 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
       // this.findAll();
     }
     this.display.deleteButton = !!crudDef.grid?.deleteAction || !!crudDef.grid?.deleteColumn;
+    this.updateAlerts();
     this._cdr.markForCheck();
   }
 
@@ -154,7 +156,8 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
   }
 
   openAddDialog(): void {
-    this.getFormCreate(this.crudDef).pipe(
+    this.refreshTokenIfNeeded(true).pipe(
+      switchMap(() => this.getFormCreate(this.crudDef)),
       switchMap((formCreate: FormDef) => {
         const dialogRef = this.dialog.open(CrudModalComponent, {
           width: this.crudDef.dialogConfig?.width ?? '500px',
@@ -184,21 +187,23 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
   }
 
   handleRowClick(row: any): void {
-    if (this.onClickRow) {
-      this.onClickRow(row);
-      return;
-    }
-    this.processRowClick(row);
+    this.refreshTokenIfNeeded(false).subscribe(() => {
+      if (this.onClickRow) {
+        this.onClickRow(row);
+        return;
+      }
+      this.processRowClick(row);
+    });
   }
 
   private processRowClick(row: any): void {
     if (!this.crudDef) return;
 
     this.spinnerControl.show();
-    const idDef = this.crudDef.grid.columnsDef.find(c => c.id);
+    const idDef = this.crudDef.grid?.columnsDef?.find(c => c.id);
     const idKey = idDef ? idDef.columnDef : 'id';
 
-    if (this.crudDef.forceGetDetail) {
+    if (this.crudDef.forceGetDetail && this.crudDef.wsGetDetail) {
       this.genericHttpService.basicGet(this.crudDef.wsGetDetail, { id: row[idKey] }, undefined, { id: 'id' }).pipe(
         finalize(() => this.spinnerControl.hide())
       ).subscribe(r => {
@@ -264,11 +269,11 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
 
   private displayCustomDialog(entity: any, nameFunc: string): void {
     const data = {
-      isEdit: false, dialog: this.crudDef.dialogs.read, entity: entity, formName: 'customFormRead',
+      isEdit: false, dialog: this.crudDef.dialogs?.read, entity: entity, formName: 'customFormRead',
       funcName: nameFunc,
       onSubmitActions: (actionDef: any, submittedEntity: any) => {
         const dialogRef = this.dialog.getDialogById('customDialog');
-        this.actionDefService.submitAction(actionDef, submittedEntity, this.i18nComponent, this.crudDef.dialogConfig)
+        this.actionDefService.submitAction(actionDef, submittedEntity, this.i18nComponent!, this.crudDef.dialogConfig)
           .subscribe({
             next: () => this.notificationService.notifySuccess(this.translate('success_message')),
             complete: () => dialogRef?.close()
@@ -313,9 +318,8 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
     this.actionLoadingStates.set(actionKey, true);
     this._cdr.markForCheck();
 
-    const wsCall$ = action.ws ? this.genericHttpService.callWs(action.ws, this.selects) : of(undefined);
-
-    wsCall$.pipe(
+    this.refreshTokenIfNeeded(false).pipe(
+      switchMap(() => action.ws ? this.genericHttpService.callWs(action.ws, this.selects) : of(undefined)),
       finalize(() => {
         this.actionLoadingStates.set(actionKey, false);
         this._cdr.markForCheck();
@@ -324,7 +328,7 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
       if (action.formDef) {
         this.callCrudDialog(action, entity);
       } else {
-        this.actionDefService.submitAction(action, this.selects, this.i18nComponent, undefined).subscribe(() => {
+        this.actionDefService.submitAction(action, this.selects, this.i18nComponent!, undefined).subscribe(() => {
           this.findAll();
           this.notificationService.notifySuccess(this.translate('success_message'));
         });
@@ -386,8 +390,8 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
           }
 
           formDef.fields.forEach(field => {
-            if (field.fromSession && currentUser && currentUser[field.key] !== undefined) {
-              field.value = currentUser[field.key];
+            if (field.fromSession && currentUser && (currentUser as any)[field.key] !== undefined) {
+              field.value = (currentUser as any)[field.key];
             }
           });
         }
@@ -396,14 +400,41 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
     );
   }
 
+  private _deniedCreateAlerts: { messageKey: string; params: any; type: 'info' | 'warning' | 'error' }[] = [];
+  private _generalAlerts: { messageKey: string; params: any; type: 'info' | 'warning' | 'error' }[] = [];
+  private lastRefreshTime = 0;
+
+  private refreshTokenIfNeeded(force: boolean = false): Observable<any> {
+    const now = Date.now();
+    if (force || (now - this.lastRefreshTime > 50000)) {
+      this.lastRefreshTime = now;
+      return this.authService.refreshToken();
+    }
+    return of(null);
+  }
+
   get deniedCreateAlerts(): { messageKey: string; params: any; type: 'info' | 'warning' | 'error' }[] {
-    if (this.showAddButton()) return [];
-    if (!this.crudDef.forms?.create && !this.crudDef.formsDef?.create) return [];
-    return this.getActiveAlerts(this.crudDef.deniedCreateAlerts || []);
+    return this._deniedCreateAlerts;
   }
 
   get generalAlerts(): { messageKey: string; params: any; type: 'info' | 'warning' | 'error' }[] {
-    return this.getActiveAlerts(this.crudDef.alerts || []);
+    return this._generalAlerts;
+  }
+
+  private updateAlerts(): void {
+    if (!this.crudDef) {
+      this._deniedCreateAlerts = [];
+      this._generalAlerts = [];
+      return;
+    }
+
+    if (this.showAddButton() || (!this.crudDef.forms?.create && !this.crudDef.formsDef?.create)) {
+      this._deniedCreateAlerts = [];
+    } else {
+      this._deniedCreateAlerts = this.getActiveAlerts(this.crudDef.deniedCreateAlerts || []);
+    }
+
+    this._generalAlerts = this.getActiveAlerts(this.crudDef.alerts || []);
   }
 
   private getActiveAlerts(alertDefs: any[]): { messageKey: string; params: any; type: 'info' | 'warning' | 'error' }[] {
@@ -437,26 +468,28 @@ export class CrudComponent extends AbstractCrudComponent<any, any> implements On
   }
 
   openDeleteDialog(): void {
-    const count = this.selects.length;
-    let message: string;
+    this.refreshTokenIfNeeded(false).subscribe(() => {
+      const count = this.selects.length;
+      let message: string;
 
-    if (count === 1) {
-      message = this.translate('modal_delete_message_single');
-    } else {
-      const pluralMessage = this.translate('modal_delete_message_plural');
-      message = pluralMessage.replace('{0}', count.toString());
-    }
+      if (count === 1) {
+        message = this.translate('modal_delete_message_single');
+      } else {
+        const pluralMessage = this.translate('modal_delete_message_plural');
+        message = pluralMessage.replace('{0}', count.toString());
+      }
 
-    this.dialogService.showQuestionModal({
-      title: this.translate('modal_delete_title'),
-      message: message,
-      actions: {
-        confirm: {
-          label: this.translate('modal_delete_button_accept'),
-          color: 'warn'
-        }
-      },
-      onSubmit: () => this.delete(),
+      this.dialogService.showQuestionModal({
+        title: this.translate('modal_delete_title'),
+        message: message,
+        actions: {
+          confirm: {
+            label: this.translate('modal_delete_button_accept'),
+            color: 'warn'
+          }
+        },
+        onSubmit: () => this.delete(),
+      });
     });
   }
 

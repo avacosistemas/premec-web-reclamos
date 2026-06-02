@@ -1,4 +1,5 @@
 import { GridDef } from "@fwk/model/component-def/grid-def";
+import { PREFIX_DOMAIN_API } from "environments/environment";
 
 export const RECLAMOS_GRID_DEF: GridDef = {
     columnsDef: [
@@ -22,11 +23,33 @@ export const RECLAMOS_GRID_DEF: GridDef = {
                 return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClasses}">${status}</span>`;
             }
         },
-        { columnDef: 'asunto', columnNameKey: 'cl_asunto' },
+        { columnDef: 'asunto', columnNameKey: 'cl_asunto', cellClass: 'max-w-[250px]', wrapText: true },
         { columnDef: 'internalSN', columnNameKey: 'cl_maquina' },
         { columnDef: 'fechaCreacion', columnNameKey: 'cl_fecha_creacion' },
         { columnDef: 'fechaInicioActividad', columnNameKey: 'cl_fecha_inicio' },
         { columnDef: 'fechaFinActividad', columnNameKey: 'cl_fecha_fin' },
+        {
+            columnDef: 'valoracion',
+            columnNameKey: 'cl_valoracion',
+            columnType: 'rating',
+            maxStars: 4,
+            headerClass: 'text-center',
+            columnActions: [
+                {
+                    actionNameKey: 'action_valorar',
+                    actionType: 'custom_rating',
+                    icon: 'heroicons_solid:star',
+                    titleKey: 'action_valorar_title',
+                    confirmMessageKey: 'action_valorar_message',
+                    type: 'warn',
+                    ws: {
+                        key: 'valorar',
+                        method: 'POST',
+                        url: PREFIX_DOMAIN_API + '/reclamos/valoracion'
+                    }
+                }
+            ]
+        },
         { columnDef: 'customerCode', columnNameKey: 'cl_customer_code' },
         { columnDef: 'estadoServiceCall', columnNameKey: 'cl_estado_service_call' },
         { columnDef: 'horaCreacion', columnNameKey: 'cl_hora_creacion' },
@@ -34,14 +57,14 @@ export const RECLAMOS_GRID_DEF: GridDef = {
         { columnDef: 'manufacturerSerialNum', columnNameKey: 'cl_manufacturer_serial_num' },
         { columnDef: 'itemCode', columnNameKey: 'cl_item_code' },
         { columnDef: 'itemName', columnNameKey: 'cl_item_name' },
-        { 
-            columnDef: 'motivoRechazo', 
+        {
+            columnDef: 'motivoRechazo',
             columnNameKey: 'cl_motivo_rechazo',
             cellRender: (row: any) => row.estadoReclamo === 'Rechazado' ? (row.motivoRechazo || '-') : ''
         }
     ],
 
-    displayedColumns: ['serviceCallID', 'estadoReclamo', 'asunto', 'internalSN', 'fechaCreacion', 'fechaInicioActividad', 'fechaFinActividad', 'motivoRechazo'],
+    displayedColumns: ['serviceCallID', 'estadoReclamo', 'valoracion', 'asunto', 'internalSN', 'fechaCreacion', 'fechaInicioActividad', 'fechaFinActividad', 'motivoRechazo'],
     actions: [
         {
             actionNameKey: 'action_actividades',
@@ -56,7 +79,16 @@ export const RECLAMOS_GRID_DEF: GridDef = {
             }
         },
     ],
-    displayedActionsCondition: [],
+    displayedActionsCondition: [
+        {
+            key: 'action_valorar',
+            expression: {
+                key: 'estadoReclamo',
+                compare: 'EQUALS',
+                value: 'Cerrado'
+            }
+        }
+    ],
     groupActions: false,
     sortAllColumns: true
 };
