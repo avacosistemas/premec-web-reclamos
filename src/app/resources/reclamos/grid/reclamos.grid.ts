@@ -45,7 +45,7 @@ export const RECLAMOS_GRID_DEF: GridDef = {
                     ws: {
                         key: 'valorar',
                         method: 'POST',
-                        url: PREFIX_DOMAIN_API + '/reclamos/valoracion'
+                        url: PREFIX_DOMAIN_API + 'reclamo/valorar'
                     }
                 }
             ]
