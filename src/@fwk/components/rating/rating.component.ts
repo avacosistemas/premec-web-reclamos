@@ -71,8 +71,8 @@ import { TranslatePipe } from '../../pipe/translate.pipe';
 })
 export class RatingComponent {
   @Input() value = 0;
-  @Input() maxStars = 4;
-  @Input() tooltips: string[] = ['Malo', 'Regular', 'Bueno', 'Excelente'];
+  @Input() maxStars = 5;
+  @Input() tooltips: string[] = ['Malo', 'Regular', 'Bueno', 'Muy Bueno', 'Excelente'];
   @Input() element?: any;
   @Input() columnDef?: any;
   @Input() columnActions: any[] = [];

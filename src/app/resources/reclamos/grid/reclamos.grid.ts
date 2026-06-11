@@ -32,7 +32,7 @@ export const RECLAMOS_GRID_DEF: GridDef = {
             columnDef: 'valoracion',
             columnNameKey: 'cl_valoracion',
             columnType: 'rating',
-            maxStars: 4,
+            maxStars: 5,
             headerClass: 'text-center',
             columnActions: [
                 {
