@@ -1,5 +1,5 @@
-﻿export const PREFIX_DOMAIN_API = 'http://localhost:8080/ws-reclamos/';
-//export const PREFIX_DOMAIN_API = 'http://premec.ddns.net:48080/ws-reclamos/';
+﻿//export const PREFIX_DOMAIN_API = 'http://localhost:8080/ws-reclamos/';
+export const PREFIX_DOMAIN_API = 'http://premec.ddns.net:48080/ws-reclamos/';
 export const PREFIX_DOMAIN_WEB = 'http://localhost:4200/';
 export const PREFIX_STATS_API = PREFIX_DOMAIN_API + 'estadisticas/'; // Reservado prefijo y endpoint para dashboards
 export const PREFIX_SWAGGER_API = 'http://premec.ddns.net:48080/ws-reclamos/v2/api-docs';
