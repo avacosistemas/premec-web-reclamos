@@ -1,4 +1,4 @@
-import { DynamicField, SELECT, AUTOCOMPLETE, NUMBER, DATEPICKER } from "@fwk/model/dynamic-form/dynamic-field";
+import { DynamicField, SELECT, NUMBER, DATEPICKER, AUTOCOMPLETE_DESPLEGABLE } from "@fwk/model/dynamic-form/dynamic-field";
 import { PREFIX_DOMAIN_API } from "environments/environment";
 
 export const RECLAMOS_FILTER_FORM_FIELDS_DEF: DynamicField<any>[] = [
@@ -28,17 +28,30 @@ export const RECLAMOS_FILTER_FORM_FIELDS_DEF: DynamicField<any>[] = [
     {
         key: 'maquina',
         labelKey: 'fl_maquina',
-        controlType: AUTOCOMPLETE,
+        controlType: AUTOCOMPLETE_DESPLEGABLE,
         options: {
-            fromWs: {
-                key: 'customer_equipment_filter',
-                url: PREFIX_DOMAIN_API + 'customer/equipment'
-            },
+            transferIdToField: 'InternalSerialNum',
             elementLabel: 'label',
-            elementValue: 'internalSerialNum'
+            elementValue: 'InternalSerialNum',
+            useNativeFilter: false,
+            searchOnFocus: false,
+            selectElementOrCleanField: 'Debe seleccionar un elemento o limpiar el campo'
+        },
+        apiOptions: {
+            queryString: {
+                nombre: 'maquina'
+            },
+            defaultShow: 20,
+            url: PREFIX_DOMAIN_API + 'customer/equipment'
         },
         colSpan: 1
     },
+
+    {
+        key: 'InternalSerialNum',
+        controlType: 'hidden'
+    },
+
     {
         key: 'fechaDesde',
         labelKey: 'fl_desde',
