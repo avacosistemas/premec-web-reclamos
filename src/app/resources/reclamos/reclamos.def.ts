@@ -45,8 +45,8 @@ export const RECLAMOS_DEF: CrudDef = {
         },
     ],
     navigation: RECLAMOS_NAV_DEF,
-    filterInMemory: true,
-    serverPagination: false,
+    filterInMemory: false,
+    serverPagination: true,
     cancelInitSearch: false,
     pagination: {
         page: 0,

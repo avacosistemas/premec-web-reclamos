@@ -3,13 +3,13 @@ import { PREFIX_DOMAIN_API } from "environments/environment";
 
 export const RECLAMOS_FILTER_FORM_FIELDS_DEF: DynamicField<any>[] = [
     {
-        key: 'numero',
+        key: 'nroReclamo',
         labelKey: 'fl_numero',
         controlType: NUMBER,
         colSpan: 1
     },
     {
-        key: 'estadoReclamo',
+        key: 'estado',
         labelKey: 'cl_estado',
         controlType: SELECT,
         options: {
