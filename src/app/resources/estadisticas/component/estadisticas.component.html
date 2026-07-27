@@ -1,6 +1,6 @@
-<div>
-    <div class="w-full">
-        <mat-expansion-panel class="border-t-0 border-b shadow-none rounded-none dark:bg-transparent" [(expanded)]="searchPanelExpanded">
+<div class="flex flex-col flex-auto min-w-0 w-full h-full bg-gray-50 dark:bg-gray-900">
+    <mat-card class="w-full bg-card border-gray-200 dark:border-gray-700 border-b shadow-none rounded-none overflow-hidden">
+        <mat-expansion-panel class="border-t-0 border-b-0 shadow-none rounded-none dark:bg-transparent" [(expanded)]="searchPanelExpanded">
             <mat-expansion-panel-header class="px-4 sm:px-6">
                 <mat-panel-title class="flex items-center space-x-3">
                     <mat-icon [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
@@ -11,18 +11,20 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pb-4 px-4 sm:px-6">
                 <mat-form-field appearance="outline" class="w-full">
                     <mat-label>{{ t('es_maquina') }}</mat-label>
-                    <input matInput [ngModel]="maquinaQuery" (ngModelChange)="onMaquinaInput($event)"
-                        [matAutocomplete]="autoMaquina" />
-                    <button *ngIf="maquinaQuery" matSuffix mat-icon-button type="button" (click)="limpiarMaquina()"
-                        [matTooltip]="t('es_btn_limpiar')">
-                        <mat-icon svgIcon="heroicons_outline:x-mark"></mat-icon>
-                    </button>
-                    <mat-autocomplete #autoMaquina="matAutocomplete"
-                        (optionSelected)="selectMaquinaByLabel($event.option.value)">
-                        <mat-option *ngFor="let m of filteredMaquinas" [value]="displayFn(m)">
-                            {{ m.label || m.internalSerialNum || m.InternalSerialNum }}
+                    <mat-select [(ngModel)]="selectedMaquinas" multiple>
+                        <div class="flex items-center justify-between p-2 border-b dark:border-slate-800 bg-slate-50 dark:bg-slate-900 sticky top-0 z-10">
+                            <button *ngIf="selectedMaquinas.length < maquinas.length" mat-button type="button" class="font-semibold text-primary hover:bg-slate-100 dark:hover:bg-slate-800 rounded px-2 py-1 min-w-0" (click)="selectAllMaquinas($event)">
+                                {{ t('es_seleccionar_todos') }}
+                            </button>
+                            <span *ngIf="selectedMaquinas.length === maquinas.length"></span>
+                            <button *ngIf="selectedMaquinas.length > 0" mat-button type="button" class="font-semibold text-secondary hover:bg-slate-100 dark:hover:bg-slate-800 rounded px-2 py-1 min-w-0" (click)="deselectAllMaquinas($event)">
+                                {{ t('es_deseleccionar_todos') }}
+                            </button>
+                        </div>
+                        <mat-option *ngFor="let m of maquinas" [value]="getMaquinaId(m)">
+                            {{ getMaquinaLabel(m) }}
                         </mat-option>
-                    </mat-autocomplete>
+                    </mat-select>
                     <mat-error *ngIf="errors.maquina">{{ t(errors.maquina) }}</mat-error>
                 </mat-form-field>
 
@@ -67,115 +69,158 @@
                 </div>
             </mat-action-row>
         </mat-expansion-panel>
-    </div>
+    </mat-card>
 
-    <div class="flex flex-col flex-auto min-w-0 p-6 sm:p-10">
-        <div *ngIf="loading" class="w-full">
+    <div class="flex-auto border border-t overflow-hidden" *ngIf="loading || results">
+        
+        <div *ngIf="loading" class="p-6">
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative min-h-[120px] animate-pulse">
+                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative min-h-[120px] animate-pulse" *ngFor="let _ of [1,2,3]">
                     <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-6"></div>
-                    <div class="flex items-center justify-between">
-                        <div class="space-y-3 flex-1">
-                            <div class="h-8 bg-slate-200 dark:bg-slate-700 rounded w-2/3"></div>
-                            <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
-                        </div>
-                        <div class="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 ml-4 shrink-0"></div>
-                    </div>
-                </div>
-                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative min-h-[120px] animate-pulse">
-                    <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-6"></div>
-                    <div class="flex items-center justify-between">
-                        <div class="space-y-3 flex-1">
-                            <div class="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
-                            <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
-                        </div>
-                        <div class="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 ml-4 shrink-0"></div>
-                    </div>
-                </div>
-                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative min-h-[120px] animate-pulse">
-                    <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-6"></div>
-                    <div class="flex items-center justify-between">
-                        <div class="space-y-3 flex-1">
-                            <div class="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
-                            <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-2/3"></div>
-                        </div>
-                        <div class="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 ml-4 shrink-0"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative animate-pulse" *ngFor="let _ of [1,2,3]">
-                    <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mb-6"></div>
-                    <div class="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/4 mb-2"></div>
-                    <div class="mt-2 pt-4 border-t border-slate-200 dark:border-slate-700">
-                        <div class="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
-                    </div>
+                    <div class="h-8 bg-slate-200 dark:bg-slate-700 rounded w-2/3"></div>
                 </div>
             </div>
         </div>
 
-        <div *ngIf="results && !loading" class="w-full">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div class="group bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative min-h-[120px] transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-0.5 cursor-default border border-slate-100 dark:border-slate-800">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-blue-300 rounded-t-2xl"></div>
-                    <div class="truncate text-secondary text-sm font-semibold uppercase tracking-wider">{{ t('es_card_maquina') }}</div>
-                    <div class="flex flex-auto items-center justify-between">
-                        <div class="flex flex-col">
-                            <div class="text-4xl sm:text-5xl font-extrabold leading-none tracking-tight text-blue-600 dark:text-blue-400">{{ results.maquina }}</div>
-                            <div class="text-md font-medium text-secondary mt-1">{{ t('es_card_maquina') }}</div>
+        <div *ngIf="results && !loading" class="w-full h-full">
+            
+            <div *ngIf="!results.isMultiMachine" class="p-6 sm:p-10">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div class="group bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative min-h-[120px] transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-0.5 cursor-default border border-slate-100 dark:border-slate-800">
+                        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-blue-300 rounded-t-2xl"></div>
+                        <div class="truncate text-secondary text-sm font-semibold uppercase tracking-wider">{{ t('es_card_maquina') }}</div>
+                        <div class="flex flex-auto items-center justify-between">
+                            <div class="flex flex-col">
+                                <div class="text-4xl sm:text-5xl font-extrabold leading-none tracking-tight text-blue-600 dark:text-blue-400">{{ results.maquina }}</div>
+                            </div>
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all duration-300 group-hover:scale-110 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-500 dark:group-hover:text-blue-400">
+                                <mat-icon class="icon-size-8" [svgIcon]="'heroicons_outline:computer-desktop'"></mat-icon>
+                            </div>
                         </div>
-                        <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all duration-300 group-hover:scale-110 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-500 dark:group-hover:text-blue-400">
-                            <mat-icon class="icon-size-8" [svgIcon]="'heroicons_outline:computer-desktop'"></mat-icon>
+                    </div>
+
+                    <div class="group bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative min-h-[120px] transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-0.5 cursor-default border border-slate-100 dark:border-slate-800">
+                        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-red-300 rounded-t-2xl"></div>
+                        <div class="truncate text-secondary text-sm font-semibold uppercase tracking-wider">{{ t('es_card_dias_detenida') }}</div>
+                        <div class="flex flex-auto items-center justify-between">
+                            <div class="flex flex-col">
+                                <div class="text-4xl sm:text-5xl font-extrabold leading-none tracking-tight text-red-600 dark:text-red-400">{{ results.diasDetenida }}</div>
+                            </div>
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all duration-300 group-hover:scale-110 group-hover:bg-red-50 dark:group-hover:bg-red-900/30 group-hover:text-red-500 dark:group-hover:text-red-400">
+                                <mat-icon class="icon-size-8" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="group bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative min-h-[120px] transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-0.5 cursor-default border border-slate-100 dark:border-slate-800">
+                        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-300 rounded-t-2xl"></div>
+                        <div class="truncate text-secondary text-sm font-semibold uppercase tracking-wider">{{ t('es_card_reclamos') }}</div>
+                        <div class="flex flex-auto items-center justify-between">
+                            <div class="flex flex-col">
+                                <div class="text-4xl sm:text-5xl font-extrabold leading-none tracking-tight text-amber-600 dark:text-amber-400">{{ results.reclamosAsociados }}</div>
+                            </div>
+                            <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-50 dark:group-hover:bg-amber-900/30 group-hover:text-amber-500 dark:group-hover:text-amber-400">
+                                <mat-icon class="icon-size-8" [svgIcon]="'heroicons_outline:clipboard-document-list'"></mat-icon>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="group bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative min-h-[120px] transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-0.5 cursor-default border border-slate-100 dark:border-slate-800">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-red-300 rounded-t-2xl"></div>
-                    <div class="truncate text-secondary text-sm font-semibold uppercase tracking-wider">{{ t('es_card_dias_detenida') }}</div>
-                    <div class="flex flex-auto items-center justify-between">
-                        <div class="flex flex-col">
-                            <div class="text-4xl sm:text-5xl font-extrabold leading-none tracking-tight text-red-600 dark:text-red-400">{{ results.diasDetenida }}</div>
-                            <div class="text-md font-medium text-secondary mt-1">{{ t('es_card_dias_detenida') }}</div>
-                        </div>
-                        <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all duration-300 group-hover:scale-110 group-hover:bg-red-50 dark:group-hover:bg-red-900/30 group-hover:text-red-500 dark:group-hover:text-red-400">
-                            <mat-icon class="icon-size-8" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
-                        </div>
-                    </div>
-                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div *ngFor="let mes of results.meses"
+                    class="group bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-0.5 cursor-default border border-slate-100 dark:border-slate-800">
+                        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-400 to-slate-300 dark:from-slate-600 dark:to-slate-500 rounded-t-2xl"></div>
+                        <div class="truncate text-secondary text-sm font-semibold uppercase tracking-wider">{{ mes.nombre }} {{ year }}</div>
 
-                <div class="group bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative min-h-[120px] transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-0.5 cursor-default border border-slate-100 dark:border-slate-800">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-300 rounded-t-2xl"></div>
-                    <div class="truncate text-secondary text-sm font-semibold uppercase tracking-wider">{{ t('es_card_reclamos') }}</div>
-                    <div class="flex flex-auto items-center justify-between">
-                        <div class="flex flex-col">
-                            <div class="text-4xl sm:text-5xl font-extrabold leading-none tracking-tight text-amber-600 dark:text-amber-400">{{ results.reclamosAsociados }}</div>
-                            <div class="text-md font-medium text-secondary mt-1">{{ t('es_card_reclamos') }}</div>
+                        <div class="flex items-center justify-between mt-4">
+                            <span class="text-secondary text-sm font-medium">{{ t('es_detenida') }}</span>
+                            <span class="text-2xl font-extrabold text-red-600 dark:text-red-400">{{ mes.detenida }}</span>
                         </div>
-                        <div class="flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-50 dark:group-hover:bg-amber-900/30 group-hover:text-amber-500 dark:group-hover:text-amber-400">
-                            <mat-icon class="icon-size-8" [svgIcon]="'heroicons_outline:clipboard-document-list'"></mat-icon>
+
+                        <div class="flex items-center justify-between mt-2 pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <span class="text-secondary text-sm font-medium">{{ t('es_reclamos') }}</span>
+                            <span class="text-2xl font-extrabold text-amber-600 dark:text-amber-400">{{ mes.reclamos }}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div *ngFor="let mes of results.meses"
-                class="group bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow relative transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-0.5 cursor-default border border-slate-100 dark:border-slate-800">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-400 to-slate-300 dark:from-slate-600 dark:to-slate-500 rounded-t-2xl"></div>
-                    <div class="truncate text-secondary text-sm font-semibold uppercase tracking-wider">{{ mes.nombre }} {{ year }}</div>
+            <div *ngIf="results.isMultiMachine" class="overflow-x-auto">
+                <table mat-table [dataSource]="dataSource" multiTemplateDataRows class="w-full bg-transparent">
+                    
+                    <ng-container matColumnDef="maquina">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50/80 dark:bg-gray-800 text-sm font-medium">
+                            {{ t('es_card_maquina') }}
+                        </th>
+                        <td mat-cell *matCellDef="let element" class="px-6 py-4 font-semibold text-sm">
+                            {{ element.maquina }}
+                        </td>
+                    </ng-container>
 
-                    <div class="flex items-center justify-between mt-4">
-                        <span class="text-secondary text-sm font-medium">{{ t('es_detenida') }}</span>
-                        <span class="text-2xl font-extrabold text-red-600 dark:text-red-400">{{ mes.detenida }}</span>
-                    </div>
+                    <ng-container matColumnDef="diasDetenida">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50/80 dark:bg-gray-800 text-sm font-medium">
+                            {{ t('es_card_dias_detenida') }}
+                        </th>
+                        <td mat-cell *matCellDef="let element" class="px-6 py-4 font-bold text-sm text-red-500">
+                            {{ element.diasDetenida }}
+                        </td>
+                    </ng-container>
 
-                    <div class="flex items-center justify-between mt-2 pt-4 border-t border-slate-100 dark:border-slate-700">
-                        <span class="text-secondary text-sm font-medium">{{ t('es_reclamos') }}</span>
-                        <span class="text-2xl font-extrabold text-amber-600 dark:text-amber-400">{{ mes.reclamos }}</span>
-                    </div>
-                </div>
+                    <ng-container matColumnDef="reclamosAsociados">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50/80 dark:bg-gray-800 text-sm font-medium">
+                            {{ t('es_card_reclamos') }}
+                        </th>
+                        <td mat-cell *matCellDef="let element" class="px-6 py-4 font-bold text-sm text-amber-500">
+                            {{ element.reclamosAsociados }}
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="expand">
+                        <th mat-header-cell *matHeaderCellDef class="w-10 bg-gray-50/80 dark:bg-gray-800 text-sm"> </th>
+                        <td mat-cell *matCellDef="let element" class="px-2 text-center">
+                            <button mat-icon-button (click)="expandRow(element); $event.stopPropagation()">
+                                <mat-icon [svgIcon]="expandedElement === element ? 'heroicons_solid:chevron-up' : 'heroicons_solid:chevron-down'"></mat-icon>
+                            </button>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="expandedDetail">
+                        <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand.length" class="p-0 border-0">
+                            <div class="overflow-hidden dark:bg-gray-900 border-t border-b border-gray-200 dark:border-gray-700"
+                                [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'">
+
+                                <div class="overflow-x-auto">
+                                    <table class="w-full bg-transparent inner-table border-collapse">
+                                        <thead>
+                                            <tr class="bg-gray-50/80 dark:bg-gray-800/80">
+                                                <th class="px-6 py-3 text-xs font-semibold text-secondary uppercase text-left">{{ t('es_subgrid_mes', 'Mes / Período') }}</th>
+                                                <th class="px-6 py-3 text-xs font-semibold text-secondary uppercase text-right">{{ t('es_subgrid_dias_parada', 'Días de Parada') }}</th>
+                                                <th class="px-6 py-3 text-xs font-semibold text-secondary uppercase text-right">{{ t('es_subgrid_reclamos', 'Cantidad Reclamos') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                            <tr *ngFor="let mes of element.meses" class="bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                                <td class="px-6 py-3 text-sm text-left">{{ mes.nombre }}</td>
+                                                <td class="px-6 py-3 text-sm font-semibold text-red-500 text-right">{{ mes.detenida }}</td>
+                                                <td class="px-6 py-3 text-sm font-semibold text-amber-500 text-right">{{ mes.reclamos }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+                    <tr mat-row *matRowDef="let element; columns: columnsToDisplayWithExpand;"
+                        class="element-row cursor-pointer bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        [class.bg-gray-50]="expandedElement === element"
+                        [class.dark:bg-gray-800]="expandedElement === element" (click)="expandRow(element)">
+                    </tr>
+                    <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="h-0"></tr>
+                </table>
             </div>
+
         </div>
     </div>
 </div>

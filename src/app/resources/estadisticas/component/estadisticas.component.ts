@@ -4,15 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { Subject, of } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 
 import { TranslatePipe } from '@fwk/pipe/translate.pipe';
 import { I18nService } from '@fwk/services/i18n-service/i18n.service';
@@ -26,14 +29,22 @@ import { EstadisticasService } from '../services/estadisticas.service';
         CommonModule, FormsModule,
         MatFormFieldModule, MatInputModule,
         MatSelectModule, MatAutocompleteModule,
-        MatButtonModule, MatIconModule,
+        MatButtonModule, MatCardModule, MatIconModule,
         MatExpansionModule, MatTooltipModule,
+        MatTableModule,
         TranslatePipe,
     ],
     templateUrl: './estadisticas.component.html',
     styleUrls: ['./estadisticas.component.scss'],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed, void', style({ height: '0px', minHeight: '0', display: 'none' })),
+            state('expanded', style({ height: '*' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
 })
 export class EstadisticasComponent implements OnInit, OnDestroy {
     private estadisticasService = inject(EstadisticasService);
@@ -45,8 +56,7 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
     currentYear = new Date().getFullYear();
 
     maquinas: any[] = [];
-    maquinaQuery = '';
-    maquinaSelected: any = null;
+    selectedMaquinas: string[] = [];
 
     year: number = this.currentYear;
 
@@ -70,11 +80,15 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
     loading = false;
     searchPanelExpanded = true;
 
+    dataSource = new MatTableDataSource<any>([]);
+    expandedElement: any | null = null;
+    columnsToDisplay = ['maquina', 'diasDetenida', 'reclamosAsociados'];
+    columnsToDisplayWithExpand = ['expand', ...this.columnsToDisplay];
+
     errors: { maquina?: string; year?: string; months?: string } = {};
 
     ngOnInit(): void {
         this.loadMaquinas();
-        // this.cargarMockData();
     }
 
     ngOnDestroy(): void {
@@ -82,73 +96,34 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
-    get filteredMaquinas(): any[] {
-        const query = typeof this.maquinaQuery === 'string' ? this.maquinaQuery.toLowerCase() : '';
-        if (!query) return this.maquinas;
-        return this.maquinas.filter(m =>
-            (m.label || '').toLowerCase().includes(query) ||
-            (m.internalSerialNum || '').toLowerCase().includes(query) ||
-            (m.InternalSerialNum || '').toLowerCase().includes(query)
-        );
+    getMaquinaId(m: any): string {
+        if (!m) return '';
+        if (typeof m === 'string') return m;
+        return m.InternalSerialNum || m.internalSerialNum || m.label || '';
     }
 
-    displayFn(maq: any): string {
-        return maq?.label || maq?.internalSerialNum || maq?.InternalSerialNum || '';
+    getMaquinaLabel(m: any): string {
+        if (!m) return '';
+        if (typeof m === 'string') return m;
+        return m.label || m.InternalSerialNum || m.internalSerialNum || '';
     }
 
-    selectMaquinaByLabel(label: string): void {
-        this.maquinaSelected = this.maquinas.find(m => this.displayFn(m) === label) || null;
-        this.maquinaQuery = label;
-        this.errors.maquina = '';
-    }
-
-    onMaquinaInput(value: any): void {
-        this.maquinaQuery = typeof value === 'string' ? value : this.displayFn(value) || '';
-        if (!this.maquinaSelected || this.displayFn(this.maquinaSelected) !== this.maquinaQuery) {
-            this.maquinaSelected = null;
-        }
-        this.errors.maquina = '';
-    }
-
-    limpiarMaquina(): void {
-        this.maquinaQuery = '';
-        this.maquinaSelected = null;
-        this.errors.maquina = '';
+    selectAllMaquinas(event: MouseEvent): void {
+        event.stopPropagation();
+        this.selectedMaquinas = this.maquinas.map(m => this.getMaquinaId(m));
         this.cdr.markForCheck();
     }
 
-    private cargarMockData(): void {
-        this.loading = true;
-        this.searchPanelExpanded = true;
-        setTimeout(() => {
-            this.results = {
-                maquina: 'EB144',
-                diasDetenida: 25,
-                reclamosAsociados: 4,
-                meses: [
-                    { mes: 3, nombre: 'Marzo', detenida: 15, reclamos: 1 },
-                    { mes: 4, nombre: 'Abril', detenida: 4, reclamos: 2 },
-                    { mes: 5, nombre: 'Mayo', detenida: 6, reclamos: 1 },
-                ],
-            };
-            this.loading = false;
-            this.cdr.markForCheck();
-        }, 600);
+    deselectAllMaquinas(event: MouseEvent): void {
+        event.stopPropagation();
+        this.selectedMaquinas = [];
+        this.cdr.markForCheck();
     }
 
-    private mockStats(maquina: string, anio: number, meses: number[]): any {
-        const nombres = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-        return {
-            maquina: maquina,
-            diasDetenida: Math.floor(Math.random() * 30) + 5,
-            reclamosAsociados: Math.floor(Math.random() * 8) + 1,
-            meses: meses.map(m => ({
-                mes: m,
-                nombre: nombres[m - 1],
-                detenida: Math.floor(Math.random() * 20) + 1,
-                reclamos: Math.floor(Math.random() * 5) + 1,
-            })),
-        };
+    limpiarMaquina(): void {
+        this.selectedMaquinas = [];
+        this.errors.maquina = '';
+        this.cdr.markForCheck();
     }
 
     private loadMaquinas(): void {
@@ -165,13 +140,10 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
     verResultados(): void {
         if (!this.validar()) return;
 
-        const idMaquina = this.maquinaSelected?.internalSerialNum
-            || this.maquinaSelected?.InternalSerialNum
-            || this.maquinaQuery;
-
         this.searchPanelExpanded = false;
         this.loading = true;
         this.results = null;
+        this.expandedElement = null;
         this.cdr.markForCheck();
 
         const periodos = this.selectedMonths.map(m => ({
@@ -179,26 +151,79 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
             mes: m
         }));
 
-        this.estadisticasService.getStats(idMaquina, periodos)
+        this.estadisticasService.getStats(this.selectedMaquinas, periodos)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (resp) => {
                     const nombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-                    
-                    const mappedMonths = (resp?.periodos || []).map((p: any) => ({
-                        mes: p.mes,
-                        anio: p.anio,
-                        nombre: nombres[p.mes - 1] || `Mes ${p.mes}`,
-                        detenida: p.diasParadaTotal ?? 0,
-                        reclamos: p.cantidadReclamos ?? 0
-                    }));
+                    const rawData = resp?.data || resp;
 
-                    this.results = {
-                        maquina: idMaquina,
-                        diasDetenida: resp?.diasParadaTotalTotal ?? 0,
-                        reclamosAsociados: resp?.cantidadReclamosTotal ?? 0,
-                        meses: mappedMonths
-                    };
+                    const machineEntries: { maquina: string; data: any }[] = [];
+
+                    if (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) {
+                        for (const key of Object.keys(rawData)) {
+                            const val = rawData[key];
+                            if (val && typeof val === 'object' && Array.isArray(val.periodos)) {
+                                machineEntries.push({
+                                    maquina: key,
+                                    data: val
+                                });
+                            }
+                        }
+                    }
+
+                    if (machineEntries.length === 0 && rawData && Array.isArray(rawData.periodos)) {
+                        machineEntries.push({
+                            maquina: this.selectedMaquinas[0] || '',
+                            data: rawData
+                        });
+                    }
+
+                    const isMulti = this.selectedMaquinas.length > 1 || machineEntries.length > 1;
+
+                    if (isMulti && machineEntries.length > 0) {
+                        const machinesList = machineEntries.map(entry => {
+                            const mData = entry.data;
+                            const mappedMonths = (mData?.periodos || []).map((p: any) => ({
+                                mes: p.mes,
+                                anio: p.anio,
+                                nombre: `${nombres[p.mes - 1] || ('Mes ' + p.mes)} ${p.anio}`,
+                                detenida: p.diasParadaTotal ?? 0,
+                                reclamos: p.cantidadReclamos ?? 0
+                            }));
+
+                            return {
+                                maquina: entry.maquina,
+                                diasDetenida: mData?.diasParadaTotalTotal ?? 0,
+                                reclamosAsociados: mData?.cantidadReclamosTotal ?? 0,
+                                meses: mappedMonths
+                            };
+                        });
+
+                        this.dataSource.data = machinesList;
+                        this.results = { isMultiMachine: true, machines: machinesList };
+                    } else if (machineEntries.length === 1) {
+                        const entry = machineEntries[0];
+                        const mData = entry.data;
+                        const mappedMonths = (mData?.periodos || []).map((p: any) => ({
+                            mes: p.mes,
+                            anio: p.anio,
+                            nombre: nombres[p.mes - 1] || `Mes ${p.mes}`,
+                            detenida: p.diasParadaTotal ?? 0,
+                            reclamos: p.cantidadReclamos ?? 0
+                        }));
+
+                        this.results = {
+                            isMultiMachine: false,
+                            maquina: entry.maquina,
+                            diasDetenida: mData?.diasParadaTotalTotal ?? 0,
+                            reclamosAsociados: mData?.cantidadReclamosTotal ?? 0,
+                            meses: mappedMonths
+                        };
+                    } else {
+                        this.results = null;
+                    }
+
                     this.loading = false;
                     this.cdr.markForCheck();
                 },
@@ -208,6 +233,11 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
                     this.cdr.markForCheck();
                 }
             });
+    }
+
+    expandRow(element: any): void {
+        this.expandedElement = this.expandedElement === element ? null : element;
+        this.cdr.markForCheck();
     }
 
     selectAllMonths(event: MouseEvent): void {
@@ -223,21 +253,21 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
     }
 
     limpiar(): void {
-        this.maquinaQuery = '';
-        this.maquinaSelected = null;
+        this.selectedMaquinas = [];
         this.year = this.currentYear;
         this.selectedMonths = [];
         this.results = null;
         this.loading = false;
         this.errors = {};
         this.searchPanelExpanded = true;
+        this.expandedElement = null;
         this.cdr.markForCheck();
     }
 
     private validar(): boolean {
         this.errors = {};
 
-        if (!this.maquinaSelected && !this.maquinaQuery.trim()) {
+        if (!this.selectedMaquinas || this.selectedMaquinas.length === 0) {
             this.errors.maquina = 'es_error_maquina_required';
         }
 
@@ -257,7 +287,18 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
         return Object.keys(this.errors).length === 0;
     }
 
-    t(key: string): string {
-        return this.i18nService.getDictionary('ESTADISTICAS')?.translate?.(key) || key;
+    t(key: string, fallback?: string): string {
+        const translated = this.i18nService.getDictionary('ESTADISTICAS')?.translate?.(key);
+        if (translated && translated !== key) {
+            return translated;
+        }
+        const fallbacks: Record<string, string> = {
+            es_subgrid_mes: 'Mes / Período',
+            es_subgrid_dias_parada: 'Días de Parada',
+            es_subgrid_reclamos: 'Cantidad Reclamos',
+            es_total: 'Total',
+            es_error_maquina_required: 'Debe seleccionar al menos una máquina'
+        };
+        return fallbacks[key] || fallback || key;
     }
 }

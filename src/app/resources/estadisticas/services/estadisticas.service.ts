@@ -9,9 +9,9 @@ export class EstadisticasService extends HttpService {
         super(injector, PREFIX_DOMAIN_API + 'reclamo/estadisticas/');
     }
 
-    getStats(machine: string, periodos: { anio: number; mes: number }[]): Observable<any> {
+    getStats(maquinas: string[], periodos: { anio: number; mes: number }[]): Observable<any> {
         return this.httpPost(this.baseUrl + 'maquina-parada', {
-            machine,
+            maquinas,
             periodos
         });
     }
